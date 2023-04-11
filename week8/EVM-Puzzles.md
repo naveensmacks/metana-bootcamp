@@ -113,3 +113,37 @@ Answer:
 0x000000000000000000000000000000000000000000000000000000000000000a
 CALLDATALOAD Get input data of current environment. It expects an integer at the top of the stack to know what byte to start loading the calldata from. There is PUSH1 00 followed by CALLDATALOAD meaning that the calldata will be loaded in starting from byte 0 and bytes 0-32 of the calldata will be pushed onto the top of the stack. 0x0a doesnt work, because when calldata is sent, since the byte sequence was not 32 bytes, it is padded to the right, so what we thought was 0a, actually turns into a00000000000000000000000000000000000000000000000000000000000000. So what we need to do is pad our 0x0a with 31 bytes to the left making it 0x000000000000000000000000000000000000000000000000000000000000000a
 
+############
+# Puzzle 7 #
+############
+
+00      36        CALLDATASIZE
+01      6000      PUSH1 00
+03      80        DUP1
+04      37        CALLDATACOPY
+05      36        CALLDATASIZE
+06      6000      PUSH1 00
+08      6000      PUSH1 00
+0A      F0        CREATE
+0B      3B        EXTCODESIZE
+0C      6001      PUSH1 01
+0E      14        EQ
+0F      6013      PUSH1 13
+11      57        JUMPI
+12      FD        REVERT
+13      5B        JUMPDEST
+14      00        STOP
+
+Answer:
+0x60016000526001601ff3
+
+EXTCODESIZE evaluates the size of the return value from the deployed bytecode.we should pass in calldata such that when it is deployed, it returns a 1 byte value.Now decoding 0x60016000526001601ff3
+[01] 	PUSH1	01
+[02]	PUSH1	00
+[04]	MSTORE	
+[05]	PUSH1	01
+[07]	PUSH1	1f
+[09]	RETURN	
+https://www.evm.codes/playground?fork=merge&unit=Wei&codeType=Bytecode&code='60016000526001601ff3'_
+
+
