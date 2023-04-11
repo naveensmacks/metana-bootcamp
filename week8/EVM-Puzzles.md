@@ -147,3 +147,66 @@ EXTCODESIZE evaluates the size of the return value from the deployed bytecode.we
 https://www.evm.codes/playground?fork=merge&unit=Wei&codeType=Bytecode&code='60016000526001601ff3'_
 
 
+############
+# Puzzle 8 #
+############
+
+00      36        CALLDATASIZE
+01      6000      PUSH1 00
+03      80        DUP1
+04      37        CALLDATACOPY
+05      36        CALLDATASIZE
+06      6000      PUSH1 00
+08      6000      PUSH1 00
+0A      F0        CREATE
+0B      6000      PUSH1 00
+0D      80        DUP1
+0E      80        DUP1
+0F      80        DUP1
+10      80        DUP1
+11      94        SWAP5
+12      5A        GAS
+13      F1        CALL
+14      6000      PUSH1 00
+16      14        EQ
+17      601B      PUSH1 1B
+19      57        JUMPI
+1A      FD        REVERT
+1B      5B        JUMPDEST
+1C      00        STOP
+
+? Enter the calldata: 
+
+Answer:0x60036000526001601ff3 (https://www.evm.codes/playground?fork=merge&unit=Wei&codeType=Bytecode&code='60036000526001601ff3'_)
+CALL instruction needs to return 0 which means we need to enter calldata that causes CALL to fail. Since the return value of the above bytecode sequence is 03, the newly created contract's code will be 03 ie. the SUB instruction. So when you call this contract, it will execute the SUB instruction, and since there are no values on the stack in the subcontext of the contract, the CALL will fail & REVERT.
+
+############
+# Puzzle 9 #
+############
+
+00      36        CALLDATASIZE
+01      6003      PUSH1 03
+03      10        LT
+04      6009      PUSH1 09
+06      57        JUMPI
+07      FD        REVERT
+08      FD        REVERT
+09      5B        JUMPDEST
+0A      34        CALLVALUE
+0B      36        CALLDATASIZE
+0C      02        MUL
+0D      6008      PUSH1 08
+0F      14        EQ
+10      6014      PUSH1 14
+12      57        JUMPI
+13      FD        REVERT
+14      5B        JUMPDEST
+15      00        STOP
+
+Answer:
+? Enter the value to send: 1
+? Enter the calldata: 0x0000000000000001
+
+Enter calldata such that the CALLDATASIZE is greater than 3 bytes, and the product of CALLDATASIZE * CALLVALUE is 08.
+
+
