@@ -143,5 +143,22 @@ describe('ERC721MerkleDrop', function () {
     expect(await this.merkleDropNft.balanceOf(this.accounts[2].address)).to.equal(ethers.BigNumber.from("1"));
     expect(await this.merkleDropNft.balanceOf(this.accounts[3].address)).to.equal(ethers.BigNumber.from("1"));
    });
+
+   it('Nft sale', async function () {
+    const tokenArray = Array.from(this.finalRandomSet);
+    await expect(this.merkleDropNft.connect(this.accounts[0]).buyToken(tokenArray[0])).to.be.rejectedWith("NFT Token is Not For Sale");
+    await this.merkleDropNft.setTokenPrice(tokenArray[0],ethers.utils.parseEther("1"));
+    await expect(this.merkleDropNft.buyToken(20)).to.be.rejectedWith("Invalid TokenId");
+    await expect(this.merkleDropNft.connect(this.accounts[1]).buyToken(tokenArray[0])).to.be.rejectedWith("Not enough ether to buy the token");
+    await this.merkleDropNft.connect(this.accounts[1]).buyToken(tokenArray[0], { value: ethers.utils.parseEther("1") });
+    expect(await this.merkleDropNft.balanceOf(this.accounts[0].address)).to.equal(ethers.BigNumber.from("0"));
+    expect(await this.merkleDropNft.balanceOf(this.accounts[1].address)).to.equal(ethers.BigNumber.from("2"));
+    const beforeBalance = await ethers.provider.getBalance(this.accounts[0].address);
+    console.log(" before balance : ",beforeBalance);
+    await this.merkleDropNft.withdrawCredits();
+    const afterBalance = await ethers.provider.getBalance(this.accounts[0].address);
+    console.log(" after balance : ",afterBalance);
+    expect(beforeBalance).to.be.lessThan(afterBalance);
+   });
   });
 });

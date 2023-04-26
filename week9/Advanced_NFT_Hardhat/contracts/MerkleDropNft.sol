@@ -33,8 +33,15 @@ contract MerkleDropNft is ERC721 {
 
     BitMaps.BitMap private claimedStatus;
 
+    enum SaleState { Minting, Presale, PublicSale, SaleEnded }
+    SaleState public currentState;
+
+    mapping(uint8 => uint256) public tokenPrices;
+
     event CommitHash(address sender, bytes32 dataHash);
     event RevealHash(address sender, bytes32 revealHash, uint256 random);
+
+    mapping(address => uint) credits;
 
     constructor(string memory name, string memory symbol, bytes32 merkleroot,  uint256 _startFrom, uint256 _totalSupply) ERC721(name, symbol){
         root = merkleroot;
@@ -130,6 +137,40 @@ contract MerkleDropNft is ERC721 {
         uint256 availableTokenCount = totalSupply - tokenCount.current();
         require(availableTokenCount > 0, "No more tokens available");
         _;
+    }
+
+    function setTokenPrice(uint8 tokenId, uint256 price) public {
+        require(_ownerOf(tokenId)!=address(0), "TokenId is not minted yet");
+        require(tokenId>=startFrom && tokenId<totalSupply,"Invalid TokenId");
+        require(_ownerOf(tokenId)==msg.sender, "Only the owner can set the Price of NFT");
+        require(price>0, "Price should greater than 1 wei");
+        tokenPrices[tokenId] = price;
+    }
+
+    function buyToken(uint8 tokenId) public payable{
+        require(tokenId >= startFrom && tokenId < totalSupply, "Invalid TokenId");
+        require(tokenPrices[tokenId]>0, "NFT Token is Not For Sale");
+        address tokenOwner = _ownerOf(tokenId);
+        require(tokenOwner!=address(0), "TokenId is not minted yet");
+        require(msg.value >= tokenPrices[tokenId], "Not enough ether to buy the token");
+         _safeTransfer(tokenOwner, msg.sender, tokenId, "");
+        tokenPrices[tokenId]=0;
+        allowForPull(tokenOwner, msg.value);
+    }
+
+    function allowForPull(address receiver, uint amount) private {
+        credits[receiver] += amount;
+    }
+
+    function withdrawCredits() public {
+        uint amount = credits[msg.sender];
+
+        require(amount != 0);
+        require(address(this).balance >= amount);
+
+        credits[msg.sender] = 0;
+
+        payable(msg.sender).transfer(amount);
     }
 
 }
