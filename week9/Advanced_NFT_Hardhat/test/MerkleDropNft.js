@@ -30,7 +30,6 @@ async function asyncAssertEmittedEvent(contract, eventName, expectedArgs, maxRan
       expect(random).to.be.lte(maxRandomValue); // Check if the random number is not greater than the maximum allowed value
       expect(randomSet.has(random)).to.be.false; // Check if the random number is unique
       randomSet.add(random); // Add the random number to the set
-      console.log("randomSet : ", randomSet);
       return true;
     }
   }
@@ -40,9 +39,7 @@ async function asyncAssertEmittedEvent(contract, eventName, expectedArgs, maxRan
 
 
 describe('ERC721MerkleDrop', function () {
-  console.log("1");
   before(async function() {
-    console.log("2");
     this.accounts = await ethers.getSigners();
     this.addresses = this.accounts.map(account => account.address);
     console.log("addresses : ", this.addresses);
@@ -56,17 +53,15 @@ describe('ERC721MerkleDrop', function () {
     this.merkleTree = new MerkleTree(hashedAddresses, keccak256, { sortPairs: true });
   });
 
-  describe('Mint all elements', function () {
-    console.log("3");
+  describe('Operations', function () {
     before(async function() {
-      console.log("4");
       this.merkleDropNft = await deploy('MerkleDropNft', 'Naveen', 'NAV', this.merkleTree.getHexRoot(), 0, 20);
     });
-    console.log("5");
     let index = 0;
-    it('element', async function () {
+    this.finalRandomSet = new Set();
+    it('Mint all Tokens', async function () {
       const maxRandomValue = 20;
-      const randomSet = new Set();
+      let randomSet = new Set();
       while (index < this.accounts.length) {
         console.log("index : ", index);
         /**
@@ -98,6 +93,55 @@ describe('ERC721MerkleDrop', function () {
         }, maxRandomValue, randomSet, receipt.blockNumber);
         index++;
       }
+      this.finalRandomSet = randomSet;
+      console.log("randomSet : ", this.finalRandomSet);
+   });
+   it('Transfer Tokens', async function () {
+    const tokenArray = Array.from(this.finalRandomSet);
+    console.log("Array : ", tokenArray);
+    await this.merkleDropNft.connect(this.accounts[1]).transferFrom(this.accounts[1].address, this.accounts[0].address, tokenArray[1]);
+    await this.merkleDropNft.connect(this.accounts[2]).transferFrom(this.accounts[2].address, this.accounts[0].address, tokenArray[2]);
+    await this.merkleDropNft.connect(this.accounts[3]).transferFrom(this.accounts[3].address, this.accounts[0].address, tokenArray[3]);
+    expect(await this.merkleDropNft.balanceOf(this.accounts[0].address)).to.equal(ethers.BigNumber.from("4"));
+
+    expect(await this.merkleDropNft.balanceOf(this.accounts[1].address)).to.equal(ethers.BigNumber.from("0"));
+    expect(await this.merkleDropNft.balanceOf(this.accounts[2].address)).to.equal(ethers.BigNumber.from("0"));
+    expect(await this.merkleDropNft.balanceOf(this.accounts[3].address)).to.equal(ethers.BigNumber.from("0"));
+    
+    const multiCall = await deploy('MultiCall');
+
+    //Transfer back those three tokens back to the same addresses using multiCall
+    const transfers = [
+      { recipient: this.accounts[1].address, tokenId: tokenArray[1] },
+      { recipient: this.accounts[2].address, tokenId: tokenArray[2] },
+      { recipient: this.accounts[3].address, tokenId: tokenArray[3] }
+    ];
+
+    const transferFunctionSignatures = transfers.map(() => 'safeTransferFrom(address,address,uint256)');
+    console.log("transferFunctionSignatures : ", transferFunctionSignatures);
+
+    const transferFunctionArguments = transfers.map(transfer => [
+      this.accounts[0].address,
+      transfer.recipient,
+      transfer.tokenId
+    ]);
+    console.log("transferFunctionArguments :" ,transferFunctionArguments);
+    const calls = transferFunctionSignatures.map((signature, i) =>
+      [this.merkleDropNft.address, this.merkleDropNft.interface.encodeFunctionData(signature, transferFunctionArguments[i])]
+    );
+    console.log("call : ", calls);
+    
+    // Approve the Multicall contract to manage the user's NFTs
+    await this.merkleDropNft.setApprovalForAll(multiCall.address, true);
+
+    const tx = await multiCall.aggregate(calls);
+    const receipt = await tx.wait();
+
+    // Assert the token balances
+    expect(await this.merkleDropNft.balanceOf(this.accounts[0].address)).to.equal(ethers.BigNumber.from("1"));
+    expect(await this.merkleDropNft.balanceOf(this.accounts[1].address)).to.equal(ethers.BigNumber.from("1"));
+    expect(await this.merkleDropNft.balanceOf(this.accounts[2].address)).to.equal(ethers.BigNumber.from("1"));
+    expect(await this.merkleDropNft.balanceOf(this.accounts[3].address)).to.equal(ethers.BigNumber.from("1"));
    });
   });
 });
