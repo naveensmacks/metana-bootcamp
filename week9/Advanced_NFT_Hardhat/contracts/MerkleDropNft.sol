@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/structs/BitMaps.sol";
+import "hardhat/console.sol";
 
 contract MerkleDropNft is ERC721 {
     bytes32 immutable public root;
@@ -33,7 +34,7 @@ contract MerkleDropNft is ERC721 {
 
     BitMaps.BitMap private claimedStatus;
 
-    enum SaleState { Minting, Presale, PublicSale, SaleEnded }
+    enum SaleState { Minting, PublicSale, SaleEnded }
     SaleState public currentState;
 
     mapping(uint8 => uint256) public tokenPrices;
@@ -48,9 +49,11 @@ contract MerkleDropNft is ERC721 {
         startFrom = _startFrom;
         totalSupply = _totalSupply;
         owner = msg.sender;
+        currentState = SaleState.Minting;
     }
 
-    function commit(address account,uint8 index, bytes32 dataHash,bytes32[] calldata proof) public {
+    function commit(address account,uint8 index, bytes32 dataHash,bytes32[] calldata proof) public onlyMinting {
+        require(commits[msg.sender].commit == bytes32(0), "Already Commit done");
         require(_verify(_leaf(account, index), proof), "Invalid merkle proof");
         require(account == owner || account == msg.sender, "you are not authorised to commit");
         commits[msg.sender].commit = dataHash;
@@ -70,7 +73,7 @@ contract MerkleDropNft is ERC721 {
         return MerkleProof.verify(proof, root, leaf);
     }
 
-    function reveal(bytes32 revealHash) public {
+    function reveal(bytes32 revealHash) public onlyMinting {
         //make sure it hasn't been revealed yet and set it to revealed
         require(commits[msg.sender].revealed==false,"CommitReveal::reveal: Already revealed");
         commits[msg.sender].revealed=true;
@@ -83,6 +86,9 @@ contract MerkleDropNft is ERC721 {
         uint256 randomId = nextToken(revealHash);
 
         _safeMint(msg.sender, randomId);
+        if(tokenCount.current() >= totalSupply) {
+            currentState = SaleState.PublicSale;
+        }
         emit RevealHash(msg.sender,revealHash,randomId);
     }
 
@@ -147,7 +153,7 @@ contract MerkleDropNft is ERC721 {
         tokenPrices[tokenId] = price;
     }
 
-    function buyToken(uint8 tokenId) public payable{
+    function buyToken(uint8 tokenId) public payable onlyPublicSale {
         require(tokenId >= startFrom && tokenId < totalSupply, "Invalid TokenId");
         require(tokenPrices[tokenId]>0, "NFT Token is Not For Sale");
         address tokenOwner = _ownerOf(tokenId);
@@ -173,4 +179,18 @@ contract MerkleDropNft is ERC721 {
         payable(msg.sender).transfer(amount);
     }
 
+    modifier onlyMinting() {
+        require(currentState == SaleState.Minting, "Not in Minting state");
+        _;
+    }
+    
+    modifier onlyPublicSale() {
+        require(currentState == SaleState.PublicSale, "Not in Public Sale state");
+        _;
+    }
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Not owner");
+        _;
+    }
 }

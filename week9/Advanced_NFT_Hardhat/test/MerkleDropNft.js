@@ -96,6 +96,10 @@ describe('ERC721MerkleDrop', function () {
       this.finalRandomSet = randomSet;
       console.log("randomSet : ", this.finalRandomSet);
    });
+   it('Minting Ended', async function () {
+    await expect(this.merkleDropNft.connect(this.accounts[0]).commit(this.accounts[0].address, 1,ethers.utils.hexZeroPad(ethers.utils.hexlify(0), 32), []))
+      .to.be.rejectedWith("Not in Minting state");
+   });
    it('Transfer Tokens', async function () {
     const tokenArray = Array.from(this.finalRandomSet);
     console.log("Array : ", tokenArray);
