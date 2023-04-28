@@ -14,7 +14,7 @@ contract MerkleDropNft is ERC721 {
 
     struct Commit {
 	    		bytes32 commit;
-	    		//uint64 block;
+	    		uint256 block;
 	    		bool revealed;
 	  		 }
 	mapping (address => Commit) public commits;
@@ -58,6 +58,7 @@ contract MerkleDropNft is ERC721 {
         require(account == owner || account == msg.sender, "you are not authorised to commit");
         commits[msg.sender].commit = dataHash;
         commits[msg.sender].revealed = false;
+        commits[msg.sender].block = block.number + 10;
         emit CommitHash(msg.sender,commits[msg.sender].commit);
     }
   
@@ -74,6 +75,7 @@ contract MerkleDropNft is ERC721 {
     }
 
     function reveal(bytes32 revealHash) public onlyMinting {
+        require(block.number>=commits[msg.sender].block, "The reveal should be 10 blocks ahead of the commit");
         //make sure it hasn't been revealed yet and set it to revealed
         require(commits[msg.sender].revealed==false,"CommitReveal::reveal: Already revealed");
         commits[msg.sender].revealed=true;

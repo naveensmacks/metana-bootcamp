@@ -2,6 +2,7 @@ const { ethers } = require('hardhat');
 const { MerkleTree } = require('merkletreejs');
 const keccak256 = require('keccak256');
 const { expect } = require('chai');
+const hre = require("hardhat");
 
 async function deploy(name, ...params) {
   const Contract = await ethers.getContractFactory(name);
@@ -82,6 +83,10 @@ describe('ERC721MerkleDrop', function () {
         await expect(this.merkleDropNft.connect(this.accounts[index]).commit(account, index+1, dataHash, proof))
           .to.emit(this.merkleDropNft, 'CommitHash')
           .withArgs(account, dataHash);
+        //Advancing 10 blocks ahead...
+        for (let i = 0; i < 10; i++) {
+          await hre.network.provider.send("evm_mine");
+        }
         const tx = await this.merkleDropNft.connect(this.accounts[index]).reveal(revealHash);
         const receipt = tx.wait();
         console.log("receipt.blockNumber : ", receipt.blockNumber);
