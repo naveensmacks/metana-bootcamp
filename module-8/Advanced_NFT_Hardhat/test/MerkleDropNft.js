@@ -153,6 +153,32 @@ describe('ERC721MerkleDrop', function () {
     expect(await this.merkleDropNft.balanceOf(this.accounts[3].address)).to.equal(ethers.BigNumber.from("1"));
    });
 
+   it('Batch Transfer Tokens', async function () {
+    const tokenArray = Array.from(this.finalRandomSet);
+    console.log("Array : ", tokenArray);
+    await this.merkleDropNft.connect(this.accounts[1]).transferFrom(this.accounts[1].address, this.accounts[0].address, tokenArray[1]);
+    await this.merkleDropNft.connect(this.accounts[2]).transferFrom(this.accounts[2].address, this.accounts[0].address, tokenArray[2]);
+    await this.merkleDropNft.connect(this.accounts[3]).transferFrom(this.accounts[3].address, this.accounts[0].address, tokenArray[3]);
+    await this.merkleDropNft.connect(this.accounts[4]).transferFrom(this.accounts[4].address, this.accounts[0].address, tokenArray[4]);
+    expect(await this.merkleDropNft.balanceOf(this.accounts[0].address)).to.equal(ethers.BigNumber.from("5"));
+
+    expect(await this.merkleDropNft.balanceOf(this.accounts[1].address)).to.equal(ethers.BigNumber.from("0"));
+    expect(await this.merkleDropNft.balanceOf(this.accounts[2].address)).to.equal(ethers.BigNumber.from("0"));
+    expect(await this.merkleDropNft.balanceOf(this.accounts[3].address)).to.equal(ethers.BigNumber.from("0"));
+    expect(await this.merkleDropNft.balanceOf(this.accounts[4].address)).to.equal(ethers.BigNumber.from("0"));
+
+    const recipients = [this.accounts[1].address,this.accounts[2].address,this.accounts[3].address,this.accounts[4].address];
+    const tokenIds = tokenArray.slice(1, 5); 
+    await this.merkleDropNft.connect(this.accounts[0]).transferMultipleNFTs(recipients,tokenIds);
+
+    // Assert the token balances
+    expect(await this.merkleDropNft.balanceOf(this.accounts[0].address)).to.equal(ethers.BigNumber.from("1"));
+    expect(await this.merkleDropNft.balanceOf(this.accounts[1].address)).to.equal(ethers.BigNumber.from("1"));
+    expect(await this.merkleDropNft.balanceOf(this.accounts[2].address)).to.equal(ethers.BigNumber.from("1"));
+    expect(await this.merkleDropNft.balanceOf(this.accounts[3].address)).to.equal(ethers.BigNumber.from("1"));
+    expect(await this.merkleDropNft.balanceOf(this.accounts[4].address)).to.equal(ethers.BigNumber.from("1"));
+   });
+
    it('Nft sale', async function () {
     const tokenArray = Array.from(this.finalRandomSet);
     await expect(this.merkleDropNft.connect(this.accounts[0]).buyToken(tokenArray[0])).to.be.rejectedWith("NFT Token is Not For Sale");

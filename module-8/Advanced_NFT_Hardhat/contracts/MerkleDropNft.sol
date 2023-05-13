@@ -181,6 +181,18 @@ contract MerkleDropNft is ERC721 {
         payable(msg.sender).transfer(amount);
     }
 
+    function transferMultipleNFTs(address[] calldata recipients, uint256[] calldata tokenIds) public {
+        require(recipients.length == tokenIds.length, "Input arrays must have the same length");
+
+        for (uint256 i = 0; i < recipients.length; i++) {
+            // Check if the sender owns the token
+            require(ownerOf(tokenIds[i]) == msg.sender, "Caller is not the owner of the token");
+
+            // Transfer the token
+            safeTransferFrom(msg.sender, recipients[i], tokenIds[i]);
+        }
+    }
+
     modifier onlyMinting() {
         require(currentState == SaleState.Minting, "Not in Minting state");
         _;
