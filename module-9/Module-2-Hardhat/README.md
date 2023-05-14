@@ -11,7 +11,7 @@ npx hardhat run --network sepolia scripts/deployERC20.js
 # MyERC20TokenUpgradeable deployed to: 0x049F7AC3e119B2f7275f9514a17e549e56Bda224  
 npx hardhat verify --network sepolia 0x049F7AC3e119B2f7275f9514a17e549e56Bda224  
 # result  
-# Verifying implementation: 0xb38Dd2475aaAb91a26AabbA79CA7F17FeA0F0821  
+# Verifying implementation: 0xb38Dd2475aaAb91a26AabbA79CA7F17FeA0F0821  (Implementation contract of ERC20)
 # Nothing to compile  
 # Successfully submitted source code for contract  
 # contracts/MyERC20TokenUpgradeable.sol:MyERC20TokenUpgradeable at 0xb38Dd2475aaAb91a26AabbA79CA7F17FeA0F0821  
@@ -31,10 +31,10 @@ npx hardhat verify --network sepolia 0x049F7AC3e119B2f7275f9514a17e549e56Bda224
 npx hardhat run --network sepolia scripts/deployERC721.js  
 # result  
 # Deploying MyERC721TokenUpgradeable...  
-# MyERC721TokenUpgradeable deployed to: 0x23d829C6ADc01AF4625348cCa6c2f96670FFcae2(Implementation-V1)  
+# MyERC721TokenUpgradeable deployed to: 0x23d829C6ADc01AF4625348cCa6c2f96670FFcae2 
 npx hardhat verify --network sepolia 0x23d829C6ADc01AF4625348cCa6c2f96670FFcae2   
 # result
-# Verifying implementation: 0x57a8d6b83CB11c67BC15566DC0d7ECf902aEccBD
+# Verifying implementation: 0x57a8d6b83CB11c67BC15566DC0d7ECf902aEccBD (Implementation of ERC721-V1)
 # Nothing to compile
 # Successfully submitted source code for contract
 # contracts/MyERC721TokenUpgradeable.sol:MyERC721TokenUpgradeable at 0x57a8d6b83CB11c67BC15566DC0d7ECf902aEccBD
@@ -51,12 +51,12 @@ npx hardhat verify --network sepolia 0x23d829C6ADc01AF4625348cCa6c2f96670FFcae2
 
 # Proxy fully verified.
 
-npx hardhat verify --network sepolia 0x23d829C6ADc01AF4625348cCa6c2f96670FFcae2
+npx hardhat run --network sepolia scripts/deployStaking.js 
 # result  
 # Deploying MyStakingContractUpgradeable...  
 # MyStakingContractUpgradeable deployed to: 0xC119aFD9e85357fA5a2C06EB543963c876d6b97b 
 # npx hardhat verify --network sepolia 0xC119aFD9e85357fA5a2C06EB543963c876d6b97b  
-# Verifying implementation: 0x3FeDb24cb85ac793cb8e6A958EC0031b8837bbdC
+# Verifying implementation: 0x3FeDb24cb85ac793cb8e6A958EC0031b8837bbdC (Implementation of StakingContract)
 # Nothing to compile
 # Successfully submitted source code for contract
 # contracts/MyStakingContractUpgradeable.sol:MyStakingContractUpgradeable at 0x3FeDb24cb85ac793cb8e6A958EC0031b8837bbdC
@@ -76,10 +76,10 @@ npx hardhat verify --network sepolia 0x23d829C6ADc01AF4625348cCa6c2f96670FFcae2
 # Upgrading to V2
 npx hardhat run --network sepolia scripts/deployERC721V2.js
 # result
-# MyNFT upgraded: 0x23d829C6ADc01AF4625348cCa6c2f96670FFcae2(implementation 2)
+# MyNFT upgraded: 0x23d829C6ADc01AF4625348cCa6c2f96670FFcae2
 npx hardhat verify --network sepolia 0x23d829C6ADc01AF4625348cCa6c2f96670FFcae2
 # result
-# Verifying implementation: 0x28933425D1CC11ED778ae10f5bFD8E0E4E4730d7
+# Verifying implementation: 0x28933425D1CC11ED778ae10f5bFD8E0E4E4730d7 (Implementation of ERC721-V2)
 # Nothing to compile
 # Successfully submitted source code for contract
 # contracts/MyERC721TokenUpgradeableV2.sol:MyERC721TokenUpgradeableV2 at 0x28933425D1CC11ED778ae10f5bFD8E0E4E4730d7
