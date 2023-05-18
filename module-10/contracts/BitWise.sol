@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: MIT
-
 pragma solidity ^0.8.4;
 
 contract BitWise {
@@ -11,9 +10,15 @@ contract BitWise {
       }
     }
   }
-  
+
   function countBitSetAsm(uint8 data) public pure returns (uint8 result) {
-    // replace following line with inline assembly code
-    result = countBitSet(data);
+    //inline assembly code
+    assembly {
+      for { let i := 0 } lt(i, 8) { i := add(i, 1) } {
+        if eq(and(shr(i, data), 1), 1) {
+          result := add(result, 1)
+        }
+      }
+    }
   }
 }
