@@ -12,7 +12,7 @@ contract String {
     }
 
     // using inline assembly code
-    function charAtAsm(string memory input, uint index) public pure returns (uint, uint, bytes32, bytes1) {
+    function charAtAsm(string memory input, uint index) public pure returns (bytes1) {
         uint length;
         uint dataStart;
         bytes32 byteVal;
@@ -26,7 +26,7 @@ contract String {
                 char := byte(0, byteVal) // load the rightmost byte only
             }
         }
-        return (length, dataStart, byteVal, bytes1(char));
+        return bytes1(char);
     }
 }
 
