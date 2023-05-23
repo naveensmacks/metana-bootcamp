@@ -7,3 +7,5 @@
   https://forum.openzeppelin.com/t/openzeppelin-upgrades-step-by-step-tutorial-for-hardhat/3580  
   
 # Module-10
+YUL and byte Manipulation 
+  countBit and charAt method implementation using inline assembly code.
