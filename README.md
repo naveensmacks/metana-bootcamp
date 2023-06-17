@@ -9,3 +9,7 @@
 # Module-10
 YUL and byte Manipulation 
   countBit and charAt method implementation using inline assembly code.
+
+# Module-11
+Transactions, Multi signatures, and Meta transactions. ECDSA and its weaknesses.  
+-Multi-Sig-Wallet contract
