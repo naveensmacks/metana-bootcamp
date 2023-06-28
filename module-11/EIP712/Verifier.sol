@@ -86,4 +86,6 @@ contract Verifier {
     }
 }
 
+//EIP-712 source
+//https://medium.com/metamask/eip712-is-coming-what-to-expect-and-how-to-use-it-bb92fd1a7a26
 //https://weijiekoh.github.io/eip712-signing-demo/index.html
