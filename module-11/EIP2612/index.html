@@ -96,6 +96,7 @@
 
     async function createPermit(spender, value, nonce, deadline) {
       const permit = { owner: account, spender, value, nonce, deadline }
+      console.log("Permit : ",permit); 
       const Permit = [
         { name: "owner", type: "address" },
         { name: "spender", type: "address" },
@@ -124,8 +125,9 @@
 
     async function main() {
       await connect()
-
-      const permit = await createPermit("0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", 1000, 1, 2661766724)
+      //initial nonce will be 0, on each further message signing nonce should be incremented . we can check the 
+      //nonce value by calling the contract function "nonces(0xDEe8dbD5ddBcAcf2a7C850B6496d18C7F22f5bDe)"
+      const permit = await createPermit("0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", 1000, 0, 2661766724)
       console.log(`r: 0x${permit.r.toString('hex')}, s: 0x${permit.s.toString('hex')}, v: ${permit.v}, sig: ${permit.signature}`)
     }
   </script>
