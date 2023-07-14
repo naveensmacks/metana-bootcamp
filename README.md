@@ -1,6 +1,6 @@
 # metana-assignments
 # Module-8
-
+  Implement a merkle tree airdrop where addresses in the merkle tree are allowed to mint once. 
 # Module-9
   Smart Contract Upgrades and Proxy-Related Vulnerabilities.  
   ### Using Hardhat Upgrades:  
