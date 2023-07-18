@@ -13,7 +13,7 @@ contract LazyNFT is ERC721, ERC721URIStorage, Ownable, EIP712 {
     using ECDSA for address;
 
     // ~~~~~~ Constants ~~~~~~
-    string private constant DOMAIN_NAME = "Vouchers-Santiago";
+    string private constant DOMAIN_NAME = "Voucher-Domain";
     string private constant VERSION = "1";
 
     // ~~~~~~ State variables ~~~~~~
