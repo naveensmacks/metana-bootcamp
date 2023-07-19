@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
-pragma solidity 0.8.19;
+pragma solidity 0.8.18;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
@@ -92,5 +92,9 @@ contract LazyNFT is ERC721, ERC721URIStorage, Ownable, EIP712 {
     {
 
         return super.tokenURI(tokenId);
+    }
+
+    function supportsInterface(bytes4 interfaceId) public view override(ERC721, ERC721URIStorage) returns (bool) {
+        return super.supportsInterface(interfaceId);
     }
 }
