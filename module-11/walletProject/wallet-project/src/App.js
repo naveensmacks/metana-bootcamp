@@ -1,10 +1,9 @@
 import './App.css';
+import WalletGenerator from './components/WalletGenerator';
 
 function App() {
   return (
-    <div className="App">
-      Wallet
-    </div>
+    <WalletGenerator></WalletGenerator>
   );
 }
 
