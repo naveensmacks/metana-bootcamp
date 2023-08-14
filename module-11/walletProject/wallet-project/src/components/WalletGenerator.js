@@ -8,6 +8,8 @@ const WalletGenerator = () => {
   const [nonce, setNonce] = useState('');
   const [textboxContent, setTextboxContent] = useState('');
   const [hashedMessage, setHashedMessage] = useState('');
+  const [signature, setSignature] = useState('');
+  const ALCHEMY_API_KEY = 'xkmT4FvUJR7KyBMbMXnL5-9m7f-GSMrO';
 
   const createNewAccount = () => {
     // Step 1: Generate a random private key
@@ -53,6 +55,23 @@ const WalletGenerator = () => {
     setHashedMessage(hash);
   };
 
+  // Implement Unstructured Signing
+  const signHash = async (hash, wallet) => {
+    const signature = await wallet.signMessage(hash);
+    return signature;
+  };
+
+  // Display Signature on Button Click
+  const handleSignButtonClick = async () => {
+    const provider = new ethers.providers.AlchemyProvider("goerli", ALCHEMY_API_KEY);
+    console.log("provider: ", provider);
+    const wallet = new ethers.Wallet(privateKey, provider);
+
+    const hashToSign = ethers.utils.id(textboxContent + nonce); // Create a raw hash
+    const newSignature = await signHash(hashToSign, wallet);
+    setSignature(newSignature);
+  };
+
   return (
     <div>
       <button onClick={createNewAccount}>Create a New Account</button>
@@ -64,6 +83,13 @@ const WalletGenerator = () => {
           <label>Hash the message + current Nonce : </label>
           <input type="text" value={textboxContent} onChange={handleTextboxChange}  placeholder={"Insert your message here"} />
           <p>Hashed Message: {hashedMessage}</p>
+        </div>
+      )}
+
+      {nonce && (
+        <div>
+          <button onClick={handleSignButtonClick}>Sign the Hash</button>
+          {signature && <p>Signature: {signature}</p>}
         </div>
       )}
     </div>
