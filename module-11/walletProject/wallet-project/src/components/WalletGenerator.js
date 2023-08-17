@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ethers } from 'ethers';
+import { BigNumber } from 'ethers';
 
 const WalletGenerator = () => {
   const [address, setAddress] = useState('');
@@ -9,6 +10,9 @@ const WalletGenerator = () => {
   const [textboxContent, setTextboxContent] = useState('');
   const [hashedMessage, setHashedMessage] = useState('');
   const [signature, setSignature] = useState('');
+  const [amount, setAmount] = useState('');
+  const [toAddress, setToAddress] = useState('');
+
   const ALCHEMY_API_KEY = 'xkmT4FvUJR7KyBMbMXnL5-9m7f-GSMrO';
 
   const createNewAccount = () => {
@@ -72,6 +76,54 @@ const WalletGenerator = () => {
     setSignature(newSignature);
   };
 
+  // Implement Transaction Signing
+  const signTransaction = async (transaction, wallet) => {
+    console.log("inside signTransaction");
+    const signedTransaction = await wallet.signTransaction(transaction);
+    console.log("after signTransaction");
+    return signedTransaction;
+  };
+
+  // Estimate Gas for the Transaction
+  const estimateGas = async (transaction, provider) => {
+    const estimatedGas = await provider.estimateGas(transaction);
+    return estimatedGas;
+  };
+
+  // Handle Transaction Submission
+  const handleSendButtonClick = async () => {
+    try {
+      console.log("inside handleSendButtonClick");
+      const provider = new ethers.providers.AlchemyProvider("goerli", ALCHEMY_API_KEY);
+      const wallet = new ethers.Wallet(privateKey, provider);
+
+      const nonceValue = await wallet.getTransactionCount();
+      console.log("amount", amount);
+      console.log("ethers.utils.hexlify(amount)", BigNumber.from(amount).toHexString());
+      console.log("nonceValue", nonceValue);
+      const transaction = {
+        nonce: nonceValue,
+        gasLimit: ethers.utils.hexlify(21000), // Default gas limit for regular transactions
+        gasPrice: ethers.utils.parseUnits("20", "gwei"), // Example gas price
+        to: toAddress,
+        value: amount,
+      };
+      console.log("transaction.value : ",transaction.value);
+      const estimatedGas = await estimateGas(transaction, provider);
+      console.log("Estimated Gas : ",estimatedGas);
+      transaction.gasLimit = estimatedGas;
+
+      const signedTransaction = await signTransaction(transaction, wallet);
+      console.log("signedTransaction : ",signedTransaction);
+      // Send the transaction
+      const txResponse = await provider.sendTransaction(signedTransaction);
+
+      console.log("Transaction sent:", txResponse);
+    } catch (error) {
+      console.error("Error sending transaction:", error);
+    }
+  };
+
   return (
     <div>
       <button onClick={createNewAccount}>Create a New Account</button>
@@ -92,6 +144,16 @@ const WalletGenerator = () => {
           {signature && <p>Signature: {signature}</p>}
         </div>
       )}
+
+      <div>
+        <label>Amount in wei:</label>
+        <input type="text" value={amount} onChange={(e) => setAmount(e.target.value)} />
+      </div>
+      <div>
+        <label>To Address:</label>
+        <input type="text" value={toAddress} onChange={(e) => setToAddress(e.target.value)} />
+      </div>
+      <button onClick={handleSendButtonClick}>Send Transaction</button>
     </div>
   );
 };
