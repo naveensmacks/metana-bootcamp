@@ -99,14 +99,14 @@ const WalletGenerator = () => {
 
       const nonceValue = await wallet.getTransactionCount();
       console.log("amount", amount);
-      console.log("ethers.utils.hexlify(amount)", BigNumber.from(amount).toHexString());
+      console.log("amount in hexa", BigNumber.from(amount).toHexString());
       console.log("nonceValue", nonceValue);
       const transaction = {
         nonce: nonceValue,
         gasLimit: ethers.utils.hexlify(21000), // Default gas limit for regular transactions
         gasPrice: ethers.utils.parseUnits("20", "gwei"), // Example gas price
         to: toAddress,
-        value: amount,
+        value: BigNumber.from(amount).toHexString(),
       };
       console.log("transaction.value : ",transaction.value);
       const estimatedGas = await estimateGas(transaction, provider);
