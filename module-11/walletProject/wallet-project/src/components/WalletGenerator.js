@@ -13,6 +13,9 @@ const WalletGenerator = () => {
   const [amount, setAmount] = useState('');
   const [toAddress, setToAddress] = useState('');
 
+  const [showModal, setShowModal] = useState(false);
+  const [estimatedGas, setEstimatedGas] = useState('');
+
   const ALCHEMY_API_KEY = 'xkmT4FvUJR7KyBMbMXnL5-9m7f-GSMrO';
 
   const createNewAccount = () => {
@@ -90,8 +93,41 @@ const WalletGenerator = () => {
     return estimatedGas;
   };
 
-  // Handle Transaction Submission
+  // Common function to prepare transaction data
+  const prepareTransaction = async () => {
+    const provider = new ethers.providers.AlchemyProvider("goerli", ALCHEMY_API_KEY);
+    const wallet = new ethers.Wallet(privateKey, provider);
+
+    const nonceValue = await wallet.getTransactionCount();
+    const transaction = {
+      nonce: nonceValue,
+      gasLimit: ethers.utils.hexlify(21000), // Default gas limit for regular transactions
+      gasPrice: ethers.utils.parseUnits("20", "gwei"), // Example gas price
+      to: toAddress,
+      value: BigNumber.from(amount).toHexString(),
+    };
+
+    const estimatedGas = await estimateGas(transaction, provider);
+    transaction.gasLimit = estimatedGas;
+
+    return { provider, wallet, transaction };
+  };
+
+    // Handle Transaction Submission
   const handleSendButtonClick = async () => {
+    try {
+      const { provider, transaction } = await prepareTransaction();
+
+      // Show the modal with estimated gas value
+      setShowModal(true);
+      setEstimatedGas(transaction.gasLimit.toString()); // Set estimated gas value from previous calculation
+
+    } catch (error) {
+      console.error("Error preparing transaction:", error);
+    }
+  };
+  // Handle Transaction Submission
+  const handleSendButtonClick1 = async () => {
     try {
       console.log("inside handleSendButtonClick");
       const provider = new ethers.providers.AlchemyProvider("goerli", ALCHEMY_API_KEY);
@@ -119,10 +155,51 @@ const WalletGenerator = () => {
       const txResponse = await provider.sendTransaction(signedTransaction);
 
       console.log("Transaction sent:", txResponse);
+
+      // Show the modal with estimated gas value
+      setShowModal(true);
+      setEstimatedGas(estimatedGas.toString()); // Set estimated gas value from previous calculation
+
     } catch (error) {
       console.error("Error sending transaction:", error);
     }
   };
+
+  // Handle Execution of Transaction
+  const handleExecuteTransaction = async () => {
+    try {
+      const { provider, wallet, transaction } = await prepareTransaction();
+      const signedTransaction = await signTransaction(transaction, wallet);
+
+      // Send the transaction
+      const txResponse = await provider.sendTransaction(signedTransaction);
+
+      console.log("Transaction sent:", txResponse);
+      // Display transaction executed message
+      alert("Transaction executed successfully!");
+    } catch (error) {
+      console.error("Error sending transaction:", error);
+    } finally {
+      // Close the modal after the transaction is executed
+      setShowModal(false);
+    }
+  };
+
+  const GasModal = ({ showModal, onClose, estimatedGas }) => {
+    if (!showModal) return null;
+  
+    return (
+      <div className="modal">
+        <div className="modal-content">
+          <h2>Confirm Transaction</h2>
+          <p>Estimated Gas: {estimatedGas} wei</p>
+          <button onClick={onClose}>Cancel</button>
+          <button onClick={handleExecuteTransaction}>OK</button>
+        </div>
+      </div>
+    );
+  };
+  
 
   return (
     <div>
@@ -154,6 +231,10 @@ const WalletGenerator = () => {
         <input type="text" value={toAddress} onChange={(e) => setToAddress(e.target.value)} />
       </div>
       <button onClick={handleSendButtonClick}>Send Transaction</button>
+      <GasModal
+        showModal={showModal}
+        onClose={() => setShowModal(false)}
+        estimatedGas={estimatedGas} />
     </div>
   );
 };
