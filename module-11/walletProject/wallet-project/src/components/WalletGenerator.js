@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
 import { ethers } from 'ethers';
 import { BigNumber } from 'ethers';
+import '../styles.css';
 
 const WalletGenerator = () => {
+  const [showCreateButton, setShowCreateButton] = useState(true);
   const [address, setAddress] = useState('');
   const [privateKey, setPrivateKey] = useState('');
+  const [showHashFields, setShowHashFields] = useState(false);
+  const [showTransactionFields, setShowTransactionFields] = useState(false);
 
   const [nonce, setNonce] = useState('');
   const [textboxContent, setTextboxContent] = useState('');
@@ -42,6 +46,7 @@ const WalletGenerator = () => {
 
     // Update the state with the new nonce
     setNonce(newNonce);
+    setShowCreateButton(false);
   };
 
    //Calculate hash
@@ -116,7 +121,7 @@ const WalletGenerator = () => {
     // Handle Transaction Submission
   const handleSendButtonClick = async () => {
     try {
-      const { provider, transaction } = await prepareTransaction();
+      const { transaction } = await prepareTransaction();
 
       // Show the modal with estimated gas value
       setShowModal(true);
@@ -124,44 +129,6 @@ const WalletGenerator = () => {
 
     } catch (error) {
       console.error("Error preparing transaction:", error);
-    }
-  };
-  // Handle Transaction Submission
-  const handleSendButtonClick1 = async () => {
-    try {
-      console.log("inside handleSendButtonClick");
-      const provider = new ethers.providers.AlchemyProvider("goerli", ALCHEMY_API_KEY);
-      const wallet = new ethers.Wallet(privateKey, provider);
-
-      const nonceValue = await wallet.getTransactionCount();
-      console.log("amount", amount);
-      console.log("amount in hexa", BigNumber.from(amount).toHexString());
-      console.log("nonceValue", nonceValue);
-      const transaction = {
-        nonce: nonceValue,
-        gasLimit: ethers.utils.hexlify(21000), // Default gas limit for regular transactions
-        gasPrice: ethers.utils.parseUnits("20", "gwei"), // Example gas price
-        to: toAddress,
-        value: BigNumber.from(amount).toHexString(),
-      };
-      console.log("transaction.value : ",transaction.value);
-      const estimatedGas = await estimateGas(transaction, provider);
-      console.log("Estimated Gas : ",estimatedGas);
-      transaction.gasLimit = estimatedGas;
-
-      const signedTransaction = await signTransaction(transaction, wallet);
-      console.log("signedTransaction : ",signedTransaction);
-      // Send the transaction
-      const txResponse = await provider.sendTransaction(signedTransaction);
-
-      console.log("Transaction sent:", txResponse);
-
-      // Show the modal with estimated gas value
-      setShowModal(true);
-      setEstimatedGas(estimatedGas.toString()); // Set estimated gas value from previous calculation
-
-    } catch (error) {
-      console.error("Error sending transaction:", error);
     }
   };
 
@@ -184,17 +151,22 @@ const WalletGenerator = () => {
       setShowModal(false);
     }
   };
-
   const GasModal = ({ showModal, onClose, estimatedGas }) => {
     if (!showModal) return null;
   
     return (
-      <div className="modal">
+      <div className="modal-overlay">
         <div className="modal-content">
           <h2>Confirm Transaction</h2>
           <p>Estimated Gas: {estimatedGas} wei</p>
-          <button onClick={onClose}>Cancel</button>
-          <button onClick={handleExecuteTransaction}>OK</button>
+          <div className="modal-buttons">
+            <button className="cancel" onClick={onClose}>
+              Cancel
+            </button>
+            <button className="ok" onClick={handleExecuteTransaction}>
+              OK
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -202,39 +174,56 @@ const WalletGenerator = () => {
   
 
   return (
-    <div>
-      <button onClick={createNewAccount}>Create a New Account</button>
+    <div className="container">
+      <div className="header">
+        <h1>My Wallet</h1>
+      </div>
+      {showCreateButton && (
+        <button onClick={createNewAccount}>Create a New Account </button>
+      )}
       {address && <p>Ethereum Address: {address}</p>}
       {privateKey && <p>Private Key: {privateKey}</p>}
 
       {nonce && (
-        <div>
-          <label>Hash the message + current Nonce : </label>
-          <input type="text" value={textboxContent} onChange={handleTextboxChange}  placeholder={"Insert your message here"} />
-          <p>Hashed Message: {hashedMessage}</p>
+        <div className= "components" >
+          <button class="heading-button" onClick={() => setShowHashFields(!showHashFields)}>Sign Message</button>
+
+          <div className={`${showHashFields ? 'expanded' : 'expanding'}`}>
+            <label>Hash the message + current Nonce:</label>
+            <input type="text" value={textboxContent} onChange={handleTextboxChange} />
+            <p><label>Hashed Message:</label> {hashedMessage}</p>
+            <button onClick={handleSignButtonClick}>Sign the Hash</button>
+            {signature && <p><label>Signature:</label> {signature}</p>}
+          </div>
         </div>
       )}
 
-      {nonce && (
-        <div>
-          <button onClick={handleSignButtonClick}>Sign the Hash</button>
-          {signature && <p>Signature: {signature}</p>}
+
+      {!showCreateButton && (
+        <div className= "components" >
+          <button class="heading-button" onClick={() => setShowTransactionFields(!showTransactionFields)}>Send Ether</button>
+          <div className={`${showTransactionFields ? 'expanded' : 'expanding'}`}>
+            <div>
+              <label>Amount in wei:</label>
+              <input
+                type="text"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+              />
+            </div>
+            <div>
+              <label>To Address:</label>
+              <input
+                type="text"
+                value={toAddress}
+                onChange={(e) => setToAddress(e.target.value)}
+              />
+            </div>
+            <button onClick={handleSendButtonClick}>Send Transaction</button>
+          </div>
         </div>
       )}
-
-      <div>
-        <label>Amount in wei:</label>
-        <input type="text" value={amount} onChange={(e) => setAmount(e.target.value)} />
-      </div>
-      <div>
-        <label>To Address:</label>
-        <input type="text" value={toAddress} onChange={(e) => setToAddress(e.target.value)} />
-      </div>
-      <button onClick={handleSendButtonClick}>Send Transaction</button>
-      <GasModal
-        showModal={showModal}
-        onClose={() => setShowModal(false)}
-        estimatedGas={estimatedGas} />
+      <GasModal showModal={showModal} onClose={() => setShowModal(false)} estimatedGas={estimatedGas} />
     </div>
   );
 };
