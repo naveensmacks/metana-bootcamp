@@ -19,6 +19,7 @@ const WalletGenerator = () => {
 
   const [showModal, setShowModal] = useState(false);
   const [estimatedGas, setEstimatedGas] = useState('');
+  const [balance, setBalance] = useState('');
 
   const ALCHEMY_API_KEY = 'xkmT4FvUJR7KyBMbMXnL5-9m7f-GSMrO';
 
@@ -172,6 +173,19 @@ const WalletGenerator = () => {
     );
   };
   
+  const fetchBalance = async () => {
+    try {
+      const provider = new ethers.providers.AlchemyProvider("goerli", ALCHEMY_API_KEY);
+      const wallet = new ethers.Wallet(privateKey, provider);
+
+      const balanceInWei = await provider.getBalance(wallet.address);
+      console.log("Balance: ", balanceInWei);
+      const balanceInEther = ethers.utils.formatEther(balanceInWei);
+      setBalance(balanceInEther);
+    } catch (error) {
+      console.error("Error fetching balance:", error);
+    }
+  };
 
   return (
     <div className="container">
@@ -183,26 +197,54 @@ const WalletGenerator = () => {
       )}
       {address && <p>Ethereum Address: {address}</p>}
       {privateKey && <p>Private Key: {privateKey}</p>}
+      
+      {address && (
+        <div>
+          <button onClick={fetchBalance}>Balance</button>
+          {balance !== "" && <label> {balance} ETH </label>}
+        </div>
+      )}
 
       {nonce && (
-        <div className= "components" >
-          <button class="heading-button" onClick={() => setShowHashFields(!showHashFields)}>Sign Message</button>
+        <div className="components">
+          <button
+            class="heading-button"
+            onClick={() => setShowHashFields(!showHashFields)}
+          >
+            Sign Message
+          </button>
 
-          <div className={`${showHashFields ? 'expanded' : 'expanding'}`}>
+          <div className={`${showHashFields ? "expanded" : "expanding"}`}>
             <label>Hash the message + current Nonce:</label>
-            <input type="text" value={textboxContent} onChange={handleTextboxChange} />
-            <p><label>Hashed Message:</label> {hashedMessage}</p>
+            <input
+              type="text"
+              value={textboxContent}
+              onChange={handleTextboxChange}
+            />
+            <p>
+              <label>Hashed Message:</label> {hashedMessage}
+            </p>
             <button onClick={handleSignButtonClick}>Sign the Hash</button>
-            {signature && <p><label>Signature:</label> {signature}</p>}
+            {signature && (
+              <p>
+                <label>Signature:</label> {signature}
+              </p>
+            )}
           </div>
         </div>
       )}
 
-
       {!showCreateButton && (
-        <div className= "components" >
-          <button class="heading-button" onClick={() => setShowTransactionFields(!showTransactionFields)}>Send Ether</button>
-          <div className={`${showTransactionFields ? 'expanded' : 'expanding'}`}>
+        <div className="components">
+          <button
+            class="heading-button"
+            onClick={() => setShowTransactionFields(!showTransactionFields)}
+          >
+            Send Ether
+          </button>
+          <div
+            className={`${showTransactionFields ? "expanded" : "expanding"}`}
+          >
             <div>
               <label>Amount in wei:</label>
               <input
@@ -223,7 +265,11 @@ const WalletGenerator = () => {
           </div>
         </div>
       )}
-      <GasModal showModal={showModal} onClose={() => setShowModal(false)} estimatedGas={estimatedGas} />
+      <GasModal
+        showModal={showModal}
+        onClose={() => setShowModal(false)}
+        estimatedGas={estimatedGas}
+      />
     </div>
   );
 };
