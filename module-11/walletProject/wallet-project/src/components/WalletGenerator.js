@@ -5,6 +5,7 @@ import '../styles.css';
 
 const WalletGenerator = () => {
   const [showCreateButton, setShowCreateButton] = useState(true);
+  const [showImportForm, setShowImportForm] = useState(false);
   const [address, setAddress] = useState('');
   const [privateKey, setPrivateKey] = useState('');
   const [showHashFields, setShowHashFields] = useState(false);
@@ -23,6 +24,19 @@ const WalletGenerator = () => {
 
   const ALCHEMY_API_KEY = 'xkmT4FvUJR7KyBMbMXnL5-9m7f-GSMrO';
 
+  const importExistingAccount = () => {
+    //0xaf2cd4dd4a64e58e406606dc5512c9dc5e2b22b34f310939ff2215105b859119
+    const newPrivateKey = ethers.utils.hexlify(privateKey);
+    const wallet = new ethers.Wallet(newPrivateKey);
+    // Update the state with the new address and private key
+    setAddress(wallet.address);
+    setPrivateKey(newPrivateKey);
+
+    const newNonce = Math.floor(Math.random() * 100000);
+
+    setNonce(newNonce);
+    setShowCreateButton(false);
+  }
   const createNewAccount = () => {
     // Step 1: Generate a random private key
     const privateKeyBytes = ethers.utils.randomBytes(32);
@@ -193,7 +207,23 @@ const WalletGenerator = () => {
         <h1>My Wallet</h1>
       </div>
       {showCreateButton && (
+        <div>
         <button onClick={createNewAccount}>Create a New Account </button>
+        <br></br>
+        <div className="components">
+          <button
+            class="heading-button"
+            onClick={() => setShowImportForm(!showImportForm)}>
+            Import an existing Account
+          </button>
+
+          <div className={`${showImportForm ? "expanded" : "expanding"}`}>
+            <label>Enter the Private Key:</label>
+            <input type="text" value={privateKey} />
+            <button onClick={importExistingAccount}>Import Account</button>
+          </div>
+        </div>
+        </div>
       )}
       {address && <p>Ethereum Address: {address}</p>}
       {privateKey && <p>Private Key: {privateKey}</p>}
