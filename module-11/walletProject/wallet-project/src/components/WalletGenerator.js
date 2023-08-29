@@ -7,6 +7,7 @@ const WalletGenerator = () => {
   const [showCreateButton, setShowCreateButton] = useState(true);
   const [showImportForm, setShowImportForm] = useState(false);
   const [address, setAddress] = useState('');
+  const [enterKey, setEnterKey] = useState('');
   const [privateKey, setPrivateKey] = useState('');
   const [showHashFields, setShowHashFields] = useState(false);
   const [showTransactionFields, setShowTransactionFields] = useState(false);
@@ -24,12 +25,19 @@ const WalletGenerator = () => {
 
   const ALCHEMY_API_KEY = 'xkmT4FvUJR7KyBMbMXnL5-9m7f-GSMrO';
 
+  const enterKeyChangeHandler = (event) => {
+    setEnterKey(event.target.value);
+  };
+  
   const importExistingAccount = () => {
+    console.log("enterKey :", enterKey);
     //0xaf2cd4dd4a64e58e406606dc5512c9dc5e2b22b34f310939ff2215105b859119
-    const newPrivateKey = ethers.utils.hexlify(privateKey);
+    const newPrivateKey = ethers.utils.hexlify(enterKey);
+    console.log("newPrivateKey :", newPrivateKey);
     const wallet = new ethers.Wallet(newPrivateKey);
     // Update the state with the new address and private key
     setAddress(wallet.address);
+    console.log("newPrivateKey : {}, wallet.address : {}",newPrivateKey,wallet.address)
     setPrivateKey(newPrivateKey);
 
     const newNonce = Math.floor(Math.random() * 100000);
@@ -212,14 +220,14 @@ const WalletGenerator = () => {
         <br></br>
         <div className="components">
           <button
-            class="heading-button"
+            className="heading-button"
             onClick={() => setShowImportForm(!showImportForm)}>
             Import an existing Account
           </button>
 
           <div className={`${showImportForm ? "expanded" : "expanding"}`}>
             <label>Enter the Private Key:</label>
-            <input type="text" value={privateKey} />
+            <input type="text" value={enterKey} onChange={enterKeyChangeHandler}/>
             <button onClick={importExistingAccount}>Import Account</button>
           </div>
         </div>
@@ -238,7 +246,7 @@ const WalletGenerator = () => {
       {nonce && (
         <div className="components">
           <button
-            class="heading-button"
+            className="heading-button"
             onClick={() => setShowHashFields(!showHashFields)}
           >
             Sign Message
@@ -267,7 +275,7 @@ const WalletGenerator = () => {
       {!showCreateButton && (
         <div className="components">
           <button
-            class="heading-button"
+            className="heading-button"
             onClick={() => setShowTransactionFields(!showTransactionFields)}
           >
             Send Ether
