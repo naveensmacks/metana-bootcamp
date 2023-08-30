@@ -30,20 +30,24 @@ const WalletGenerator = () => {
   };
   
   const importExistingAccount = () => {
-    console.log("enterKey :", enterKey);
-    //0xaf2cd4dd4a64e58e406606dc5512c9dc5e2b22b34f310939ff2215105b859119
-    const newPrivateKey = ethers.utils.hexlify(enterKey);
-    console.log("newPrivateKey :", newPrivateKey);
-    const wallet = new ethers.Wallet(newPrivateKey);
-    // Update the state with the new address and private key
-    setAddress(wallet.address);
-    console.log("newPrivateKey : {}, wallet.address : {}",newPrivateKey,wallet.address)
-    setPrivateKey(newPrivateKey);
+    try {
+      console.log("enterKey :", enterKey);
+      const newPrivateKey = ethers.utils.hexlify(enterKey);
+      console.log("newPrivateKey :", newPrivateKey);
+      const wallet = new ethers.Wallet(newPrivateKey);
+      // Update the state with the new address and private key
+      setAddress(wallet.address);
+      console.log("newPrivateKey : {}, wallet.address : {}",newPrivateKey,wallet.address)
+      setPrivateKey(newPrivateKey);
 
-    const newNonce = Math.floor(Math.random() * 100000);
+      const newNonce = Math.floor(Math.random() * 100000);
 
-    setNonce(newNonce);
-    setShowCreateButton(false);
+      setNonce(newNonce);
+      setShowCreateButton(false);
+    } catch (error) {
+      console.error("Error importExistingAccount", error);
+      alert("Error importExistingAccount Invalid private key");
+    }
   }
   const createNewAccount = () => {
     // Step 1: Generate a random private key
