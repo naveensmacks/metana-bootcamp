@@ -173,6 +173,7 @@ const WalletGenerator = () => {
       alert("Transaction executed successfully!");
     } catch (error) {
       console.error("Error sending transaction:", error);
+      alert("Cannot perform the transaction, insufficient funds");
     } finally {
       // Close the modal after the transaction is executed
       setShowModal(false);
