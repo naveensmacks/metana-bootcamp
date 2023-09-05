@@ -20,7 +20,9 @@ const WalletGenerator = () => {
   const [toAddress, setToAddress] = useState('');
 
   const [showModal, setShowModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
   const [estimatedGas, setEstimatedGas] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
   const [balance, setBalance] = useState('');
 
   const ALCHEMY_API_KEY = 'xkmT4FvUJR7KyBMbMXnL5-9m7f-GSMrO';
@@ -46,7 +48,8 @@ const WalletGenerator = () => {
       setShowCreateButton(false);
     } catch (error) {
       console.error("Error importExistingAccount", error);
-      alert("Error importExistingAccount Invalid private key");
+      setShowErrorModal(true);
+      setErrorMessage("Error in importing existing account, Invalid private key");
     }
   }
   const createNewAccount = () => {
@@ -156,6 +159,8 @@ const WalletGenerator = () => {
 
     } catch (error) {
       console.error("Error preparing transaction:", error);
+      setShowErrorModal(true);
+      setErrorMessage("Error in preparing transaction, invalid To Address");
     }
   };
 
@@ -173,13 +178,14 @@ const WalletGenerator = () => {
       alert("Transaction executed successfully!");
     } catch (error) {
       console.error("Error sending transaction:", error);
-      alert("Cannot perform the transaction, insufficient funds");
+      setShowErrorModal(true);
+      setErrorMessage("Cannot perform the transaction, insufficient funds");
     } finally {
       // Close the modal after the transaction is executed
       setShowModal(false);
     }
   };
-  const GasModal = ({ showModal, onClose, estimatedGas }) => {
+  const MessageModal = ({ showModal, onClose, estimatedGas }) => {
     if (!showModal) return null;
   
     return (
@@ -193,6 +199,24 @@ const WalletGenerator = () => {
             </button>
             <button className="ok" onClick={handleExecuteTransaction}>
               OK
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const ErrorModal = ({ showErrorModal, onClose, errorMessage }) => {
+    if (!showErrorModal) return null;
+  
+    return (
+      <div className="modal-overlay">
+        <div className="modal-content">
+          <h2>Error Occurred</h2>
+          <p>{errorMessage}</p>
+          <div className="modal-buttons">
+            <button className="cancel" onClick={onClose}>
+              Ok
             </button>
           </div>
         </div>
@@ -308,10 +332,15 @@ const WalletGenerator = () => {
           </div>
         </div>
       )}
-      <GasModal
+      <MessageModal
         showModal={showModal}
         onClose={() => setShowModal(false)}
         estimatedGas={estimatedGas}
+      />
+      <ErrorModal
+        showErrorModal={showErrorModal}
+        onClose={() => setShowErrorModal(false)}
+        errorMessage={errorMessage}
       />
     </div>
   );
