@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ethers } from 'ethers';
 import { BigNumber } from 'ethers';
 import '../styles.css';
+import {MessageModal, ErrorModal} from './Modals';
 
 const WalletGenerator = () => {
   const [showCreateButton, setShowCreateButton] = useState(true);
@@ -185,44 +186,6 @@ const WalletGenerator = () => {
       setShowModal(false);
     }
   };
-  const MessageModal = ({ showModal, onClose, estimatedGas }) => {
-    if (!showModal) return null;
-  
-    return (
-      <div className="modal-overlay">
-        <div className="modal-content">
-          <h2>Confirm Transaction</h2>
-          <p>Estimated Gas: {estimatedGas} wei</p>
-          <div className="modal-buttons">
-            <button className="cancel" onClick={onClose}>
-              Cancel
-            </button>
-            <button className="ok" onClick={handleExecuteTransaction}>
-              OK
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const ErrorModal = ({ showErrorModal, onClose, errorMessage }) => {
-    if (!showErrorModal) return null;
-  
-    return (
-      <div className="modal-overlay">
-        <div className="modal-content">
-          <h2>Error Occurred</h2>
-          <p>{errorMessage}</p>
-          <div className="modal-buttons">
-            <button className="cancel" onClick={onClose}>
-              Ok
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  };
   
   const fetchBalance = async () => {
     try {
@@ -336,6 +299,7 @@ const WalletGenerator = () => {
         showModal={showModal}
         onClose={() => setShowModal(false)}
         estimatedGas={estimatedGas}
+        handleExecuteTransaction = {handleExecuteTransaction}
       />
       <ErrorModal
         showErrorModal={showErrorModal}
