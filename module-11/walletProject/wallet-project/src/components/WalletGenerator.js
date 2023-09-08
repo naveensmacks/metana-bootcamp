@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ethers } from 'ethers';
 import { BigNumber } from 'ethers';
 import '../styles.css';
-import {MessageModal, ErrorModal} from './Modals';
+import {MessageModal,ConfirmMessageModal, ErrorModal} from './Modals';
 
 const WalletGenerator = () => {
   const [showCreateButton, setShowCreateButton] = useState(true);
@@ -21,9 +21,11 @@ const WalletGenerator = () => {
   const [toAddress, setToAddress] = useState('');
 
   const [showModal, setShowModal] = useState(false);
+  const [showMessageModal, setShowMessageModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [estimatedGas, setEstimatedGas] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [message, setMessage] = useState('');
   const [balance, setBalance] = useState('');
 
   const ALCHEMY_API_KEY = 'xkmT4FvUJR7KyBMbMXnL5-9m7f-GSMrO';
@@ -176,7 +178,9 @@ const WalletGenerator = () => {
 
       console.log("Transaction sent:", txResponse);
       // Display transaction executed message
-      alert("Transaction executed successfully!");
+      //alert("Transaction executed successfully!");
+      setShowMessageModal(true);
+      setMessage("Transaction executed successfully!");
     } catch (error) {
       console.error("Error sending transaction:", error);
       setShowErrorModal(true);
@@ -295,7 +299,7 @@ const WalletGenerator = () => {
           </div>
         </div>
       )}
-      <MessageModal
+      <ConfirmMessageModal
         showModal={showModal}
         onClose={() => setShowModal(false)}
         estimatedGas={estimatedGas}
@@ -305,6 +309,11 @@ const WalletGenerator = () => {
         showErrorModal={showErrorModal}
         onClose={() => setShowErrorModal(false)}
         errorMessage={errorMessage}
+      />
+      <MessageModal
+        showMessageModal={showMessageModal}
+        onClose={() => setShowMessageModal(false)}
+        message={message}
       />
     </div>
   );
