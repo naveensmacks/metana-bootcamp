@@ -3,6 +3,7 @@ pragma solidity ^0.8;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./interfaces/Uniswap.sol";
+//import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router01.sol";
 
 contract TestUniswap {
   address private constant UNISWAP_V2_ROUTER =
@@ -16,10 +17,14 @@ contract TestUniswap {
     uint _amountOutMin,
     address _to
   ) external {
+     //1 transfer token from msg.sender to this contract
     IERC20(_tokenIn).transferFrom(msg.sender, address(this), _amountIn);
+    //2 approve uniswap router the tokenIn
     IERC20(_tokenIn).approve(UNISWAP_V2_ROUTER, _amountIn);
 
+     //3 create a path with tokenIn, WETH and tokenOut as intermediate WETH swap gives better value
     address[] memory path;
+    //in case if tokenIn or tokenOut then no intermediate swap is required
     if (_tokenIn == WETH || _tokenOut == WETH) {
       path = new address[](2);
       path[0] = _tokenIn;
@@ -38,29 +43,5 @@ contract TestUniswap {
       _to,
       block.timestamp
     );
-  }
-
-  function getAmountOutMin(
-    address _tokenIn,
-    address _tokenOut,
-    uint _amountIn
-  ) external view returns (uint) {
-    address[] memory path;
-    if (_tokenIn == WETH || _tokenOut == WETH) {
-      path = new address[](2);
-      path[0] = _tokenIn;
-      path[1] = _tokenOut;
-    } else {
-      path = new address[](3);
-      path[0] = _tokenIn;
-      path[1] = WETH;
-      path[2] = _tokenOut;
-    }
-
-    // same length as path
-    uint[] memory amountOutMins =
-      IUniswapV2Router(UNISWAP_V2_ROUTER).getAmountsOut(_amountIn, path);
-
-    return amountOutMins[path.length - 1];
   }
 }

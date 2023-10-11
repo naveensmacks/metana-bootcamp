@@ -34,18 +34,15 @@ describe("Swap", function () {
       //No of dai tokens to be transferred from the whale
       const amountIn = ethers.utils.parseUnits("118", 18);
       console.log("amountIn in DAI:", amountIn);
-      if(amountIn==11800000000){
-        console.log("amountIn in DAI:", amountIn);
-      }
+
       const amountOut = "1";
       const to = daiWhaleSigner.address;
 
       //check that WBTC balance is 0
       const WBTC_BALANCEOF_BEFORE = await wbtcContract.balanceOf(daiWhaleSigner.address);
       console.log("Balance before Swap : ",WBTC_BALANCEOF_BEFORE);
-      //expect(WBTC_BALANCEOF_BEFORE).to.equal(0);
+      expect(WBTC_BALANCEOF_BEFORE).to.equal(0);
 
-      console.log("daiContract:", daiContract);
       //approve DAI
       const approveTx = await daiContract.connect(daiWhaleSigner).approve(swapContract.address, amountIn);
       await approveTx.wait();
