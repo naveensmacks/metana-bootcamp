@@ -46,7 +46,7 @@ describe("Swap", function () {
 
   describe("optimal swap", function () {
 
-    it.only("Fully optimal swap", async () => {
+    it("Fully optimal swap", async () => {
       const { optimalSwapContract, daiWhaleSigner, daiContract, wethContract, amountIn } = await loadFixture(testSwapUniswap);
       await snapshot(optimalSwapContract, "Before :")
       await optimalSwapContract.connect(daiWhaleSigner).zap(daiContract.address, wethContract.address, amountIn, {
@@ -61,7 +61,7 @@ describe("Swap", function () {
       */
     })
 
-    it.only("sub-optimal swap", async () => {
+    it("sub-optimal swap", async () => {
       const { optimalSwapContract, daiWhaleSigner, daiContract, wethContract, amountIn } = await loadFixture(testSwapUniswap);
       await snapshot(optimalSwapContract, "before")
       await optimalSwapContract.connect(daiWhaleSigner).subOptimalZap(daiContract.address, wethContract.address, amountIn, {
