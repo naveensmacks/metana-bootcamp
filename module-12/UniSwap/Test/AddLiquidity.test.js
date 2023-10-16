@@ -30,7 +30,7 @@ describe("Swap", function () {
   }
 
   describe("Add liquidity", function () {
-    it.only("Should add 100DAI & 100 USDC", async function () {
+    it("Should add 100DAI & 100 USDC", async function () {
       const { addLiquidityContract, daiWhaleSigner, daiContract, usdcContract } = await loadFixture(testSwapUniswap);
       const tokenA = daiContract.address;
       const tokenB = usdcContract.address;
