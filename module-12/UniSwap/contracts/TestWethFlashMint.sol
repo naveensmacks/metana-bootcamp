@@ -7,11 +7,11 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 contract TestWethFlashMint {
   // WETH 10
   address private WETH = 0xf4BB2e28688e89fCcE3c0580D37d36A7672E8A9F;
-  bytes32 public immutable CALLBACK_SUCCESS =
-    keccak256("ERC3156FlashBorrower.onFlashLoan");
+  bytes32 public immutable CALLBACK_SUCCESS = keccak256("ERC3156FlashBorrower.onFlashLoan");
 
   address public sender;
   address public token;
+  address public borrower;
 
   event Log(string name, uint val);
 
@@ -23,8 +23,8 @@ contract TestWethFlashMint {
     emit Log("total supply", total);
 
     IERC20(WETH).approve(WETH, amount);
-
-    bytes memory data = "";
+    bytes memory data = abi.encode(msg.sender);
+    //bytes memory data = "";
     WETH10(WETH).flashLoan(address(this), WETH, amount, data);
   }
 
@@ -36,11 +36,13 @@ contract TestWethFlashMint {
     uint fee,
     bytes calldata data
   ) external returns (bytes32) {
+    //here we should do whatever we  want with the IWETH I just borrowed
     uint bal = IERC20(WETH).balanceOf(address(this));
 
     sender = _sender;
     token = _token;
-
+    borrower = abi.decode(data, (address));
+  
     emit Log("amount", amount);
     emit Log("fee", fee);
     emit Log("balance", bal);

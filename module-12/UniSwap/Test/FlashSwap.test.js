@@ -27,7 +27,7 @@ describe("Swap", function () {
   }
 
   describe("Flash swap, borrow 1million DAI", function () {
-    it.only("Should borrow 1m DAI token", async function () {
+    it("Should borrow 1m DAI token", async function () {
       const { flashSwapContract, signer, daiContract } = await loadFixture(testSwapUniswap);
       const tokenToBorrow = daiContract.address;
       const amountToBorrow = ethers.utils.parseEther("10000");
@@ -62,3 +62,12 @@ describe("Swap", function () {
     });
   });
 });
+// Below are the Log events from the contract
+// Before BALANCE TOKEN 0   1145159594790000000000
+// amount   10000000000000000000000
+// amount0   10000000000000000000000
+// amount1   0
+// fee   30090270812437311936
+// amount to repay   10030090270812437311936
+// After BALANCE TOKEN 0   11145159594790000000000
+// After BALANCE TOKEN 1   0
