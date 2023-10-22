@@ -32,8 +32,11 @@ describe("FlashMint", function () {
   describe("Flash mint", function () {
     it("Update all the storage variables from the onFlashLoan()", async function () {
       const { flashMintContract, signer, weth10Contract } = await loadFixture(testSwapUniswap);
-      const ZERO = "0";
-      const ZERO_BYTES = "0x";
+
+      //check Total Supply before the TX
+      const totalSupply = await weth10Contract.totalSupply();
+      console.log("Total Supply before the TX : ", totalSupply);
+      console.log("flashMintContract Address  : ", flashMintContract.address);
 
       //expect all the storage variables from the contract to be the default
       expect(await flashMintContract.sender()).to.be.equal(ZERO_ADDRESS);
@@ -62,3 +65,16 @@ describe("FlashMint", function () {
     });
   });
 });
+
+// Total Supply before the TX :  BigNumber { value: "165170200716975972" }
+// flashMintContract Address  :  0x20Dc424c5fa468CbB1c702308F0cC9c14DA2825C
+// After Flash Mint
+// Sender    0x20Dc424c5fa468CbB1c702308F0cC9c14DA2825C
+// Token     0xf4BB2e28688e89fCcE3c0580D37d36A7672E8A9F
+// Borrower  0xE46203ca942c4bA1A9249B6B9B27A79761819606
+// Below are the Log events from the contract
+// total supply   165170200716975972
+// amount   165170200716975973
+// fee   0
+// balance   165170200716975973
+// New Total Supply   330340401433951945

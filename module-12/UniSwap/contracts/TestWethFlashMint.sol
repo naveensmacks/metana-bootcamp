@@ -46,6 +46,7 @@ contract TestWethFlashMint {
     emit Log("amount", amount);
     emit Log("fee", fee);
     emit Log("balance", bal);
+    emit Log("New Total Supply", IERC20(WETH).totalSupply());
 
     return CALLBACK_SUCCESS;
   }
