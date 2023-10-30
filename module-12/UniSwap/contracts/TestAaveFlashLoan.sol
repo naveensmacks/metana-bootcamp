@@ -6,6 +6,7 @@ import "./interfaces/aave/FlashLoanReceiverBase.sol";
 
 contract TestAaveFlashLoan is FlashLoanReceiverBase {
   using SafeMath for uint;
+  address private WETH = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
 
   event Log(string message, uint val);
 
@@ -17,6 +18,7 @@ contract TestAaveFlashLoan is FlashLoanReceiverBase {
   function testFlashLoan(address asset, uint amount) external {
     uint bal = IERC20(asset).balanceOf(address(this));
     require(bal > amount, "bal <= amount");
+    emit Log("balance before loan", bal);
 
     address receiver = address(this);
 
@@ -35,7 +37,7 @@ contract TestAaveFlashLoan is FlashLoanReceiverBase {
 
     bytes memory params = ""; // extra data to pass abi.encode(...)
     uint16 referralCode = 0;
-
+    
     LENDING_POOL.flashLoan(
       receiver,
       assets,
@@ -55,6 +57,9 @@ contract TestAaveFlashLoan is FlashLoanReceiverBase {
     bytes calldata params
   ) external override returns (bool) {
     // do stuff here (arbitrage, liquidation, etc...)
+    //here we should do whatever we  want with the USDC ust borrowed
+    uint bal = IERC20(WETH).balanceOf(address(this));
+    emit Log("balance after loan", bal);
     // abi.decode(params) to decode params
     for (uint i = 0; i < assets.length; i++) {
       emit Log("borrowed", amounts[i]);
