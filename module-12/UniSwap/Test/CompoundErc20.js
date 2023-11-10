@@ -31,12 +31,17 @@ describe("TestCompoundErc20", function () {
   
   const snapshot = async (testCompound, token, cToken) => {
     const { exchangeRate, supplyRate } = await testCompound.getInfo.call()
-
+    let estimateBalance = await testCompound.balanceOfUnderlying.call({ gasLimit: 1000000 });
+    let receipt1 = await estimateBalance.wait();
+    console.log("estimateBalance : ", receipt1.events[0].args[0]);
+    let balanceOfUnderlying = await testCompound.estimateBalanceOfUnderlying.call({ gasLimit: 1000000 });
+    let receipt2 = await balanceOfUnderlying.wait();
+    console.log("balanceOfUnderlying : ", receipt2.events[0].args[0]);
     return {
       exchangeRate,
       supplyRate,
-      estimateBalance: await testCompound.estimateBalanceOfUnderlying.call(),
-      balanceOfUnderlying: await testCompound.balanceOfUnderlying.call(),
+      estimateBalance: estimateBalance.value,
+      balanceOfUnderlying: balanceOfUnderlying.value,
       token: await token.balanceOf(testCompound.address),
       cToken: await cToken.balanceOf(testCompound.address),
     }
@@ -59,24 +64,29 @@ describe("TestCompoundErc20", function () {
       console.log("--- supply ---");
       console.log(`exchange rate ${after.exchangeRate}`);
       console.log(`supply rate ${after.supplyRate}`);
-      console.log(`estimate balance ${after.estimateBalance}`);
-      console.log(`balance of underlying ${after.balanceOfUnderlying}`);
+      console.log(`estimate balance ${after.estimateBalance.toString()}`);
+      console.log(`balance of underlying ${after.balanceOfUnderlying.toString()}`);
       console.log(`token balance ${after.token}`);
       console.log(`c token balance ${after.cToken}`);
+
       // Get the current block number
-      const currentBlockNumber = await ethers.provider.getBlockNumber();
+      let currentBlockNumber = await ethers.provider.getBlockNumber();
       console.log("Current block number:", currentBlockNumber);
 
-      // accrue interest on supply
-      // Increase the block number by 500
-      await network.provider.send("evm_increaseTime", [500]);
-      await network.provider.send("evm_mine", []);
-  
-      console.log("Current block number:", await ethers.provider.getBlockNumber());
+      // Set the target block number
+      const targetBlockNumber = currentBlockNumber + 10000;
+      //accure interest on supply
+      // Mine multiple blocks at once
+      for (let i = currentBlockNumber; i < targetBlockNumber; i++) {
+        await network.provider.send("evm_mine");
+      }
+
+      console.log("After increase block number:", await ethers.provider.getBlockNumber());
+
       after = await snapshot(compoundErc20Contract, wbtcContract, cToken);
   
       console.log(`--- after some blocks... ---`);
-      console.log(`balance of underlying ${after.balanceOfUnderlying}`);
+      console.log(`balance of underlying ${after.balanceOfUnderlying.toString()}`);
   
       // test redeem
       const cTokenAmount = await cToken.balanceOf(compoundErc20Contract.address);
@@ -85,10 +95,32 @@ describe("TestCompoundErc20", function () {
       after = await snapshot(compoundErc20Contract, wbtcContract, cToken);
   
       console.log(`--- redeem ---`);
-      console.log(`balance of underlying ${after.balanceOfUnderlying}`);
+      console.log(`balance of underlying ${after.balanceOfUnderlying.toString()}`);
       console.log(`token balance ${after.token}`);
       console.log(`c token balance ${after.cToken}`);
 
+
+      //await wbtcContract.connect(signer).transfer(testCompoundErc20.address, fundAmount);
+      //console.log("After Balance" , await wbtcContract.balanceOf(signer.address));
+
+
+      /* const receipt = await tx.wait();
+    
+      //filtering logs only for the TestAaveFlashLoan address
+      const logsForContract = receipt.logs.filter((log) => log.address === testCompoundErc20.address);
+
+      const LogEvent = new ethers.utils.Interface(["event Log(string message, uint val)"]);
+      console.log("Below are the Log events from the contract");
+      for (const log of logsForContract) {
+        //filtering only log events - not required the TestAaveFlashLoan contract only has one event which is log
+        if (log.topics[0] === ethers.utils.keccak256(ethers.utils.toUtf8Bytes("Log(string,uint256)"))) {
+          //or you can also pass LogEvent.getEvent("Log") instead of "Log"
+          const decodedLog =  LogEvent.decodeEventLog("Log", log.data, log.topics);
+          const message = decodedLog.message;
+          const val = decodedLog.val.toString();
+          console.log(message, " ", val);
+        }
+      } */
     });
   });
 });
