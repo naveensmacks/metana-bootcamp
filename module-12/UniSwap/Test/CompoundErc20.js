@@ -32,11 +32,15 @@ describe("TestCompoundErc20", function () {
   const snapshot = async (testCompound, token, cToken) => {
     const { exchangeRate, supplyRate } = await testCompound.getInfo.call()
     let estimateBalance = await testCompound.balanceOfUnderlying.call({ gasLimit: 1000000 });
+    console.log("estimateBalance0 : ", estimateBalance);
     let receipt1 = await estimateBalance.wait();
-    console.log("estimateBalance : ", receipt1.events[0].args[0]);
+    console.log("estimateBalance : ", receipt1.events[0].data);
+    // Convert the hex string to a BigNumber and then to a number
+    //const returnValueNumber = ethers.BigNumber.from(receipt1.events[0].data).toNumber();
+    console.log("returnValueNumber : ", returnValueNumber);
     let balanceOfUnderlying = await testCompound.estimateBalanceOfUnderlying.call({ gasLimit: 1000000 });
     let receipt2 = await balanceOfUnderlying.wait();
-    console.log("balanceOfUnderlying : ", receipt2.events[0].args[0]);
+    console.log("balanceOfUnderlying : ", receipt2.events[0].data);
     return {
       exchangeRate,
       supplyRate,
@@ -48,7 +52,7 @@ describe("TestCompoundErc20", function () {
   }
 
   describe("Compound ", function () {
-    it.only("Supply and Redeem", async function () {
+    it("Supply and Redeem", async function () {
       const { compoundErc20Contract, signer, wbtcContract, cToken } = await loadFixture(testCompoundErc20);
       console.log("Before balance" , await wbtcContract.balanceOf(signer.address));
       console.log("compoundErc20Contract.address = ", compoundErc20Contract.address);
@@ -121,6 +125,19 @@ describe("TestCompoundErc20", function () {
           console.log(message, " ", val);
         }
       } */
+    });
+
+    it.only("Supply and Redeem", async function () {
+      const { compoundErc20Contract, signer, wbtcContract, cToken } = await loadFixture(testCompoundErc20);
+
+      //let estimateBalance = await testCompound.testNonView.call({ gasLimit: 1000000 });
+      let test = await compoundErc20Contract.callStatic.testNonView();
+      console.log("test : ", test);
+      // let receipt = await test.wait();
+      // console.log("test receipt : ", receipt);
+      // Convert the hex string to a BigNumber and then to a number
+      //const returnValueNumber = ethers.BigNumber.from(receipt1.events[0].data).toNumber();
+      //console.log("returnValueNumber : ", returnValueNumber);
     });
   });
 });

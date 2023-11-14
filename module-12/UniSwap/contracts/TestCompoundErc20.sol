@@ -41,9 +41,16 @@ contract TestCompoundErc20 {
     uint cTokenBal = cToken.balanceOf(address(this));
     uint exchangeRate = cToken.exchangeRateCurrent();
     uint decimals = 8; // WBTC = 8 decimals
-    uint cTokenDecimals = 8;
+    uint cTokenDecimals = 2;
 
     return (cTokenBal * exchangeRate) / 10**(18 + decimals - cTokenDecimals);
+    //return cTokenDecimals;
+  }
+
+  function testNonView() external returns (uint) {
+    uint cTokenBal = cToken.balanceOf(address(this));
+    uint exchangeRate = cToken.exchangeRateCurrent();
+    return 11;
   }
 
   // not view function
