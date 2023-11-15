@@ -30,29 +30,23 @@ describe("TestCompoundErc20", function () {
   }
   
   const snapshot = async (testCompound, token, cToken) => {
-    const { exchangeRate, supplyRate } = await testCompound.getInfo.call()
-    let estimateBalance = await testCompound.balanceOfUnderlying.call({ gasLimit: 1000000 });
-    console.log("estimateBalance0 : ", estimateBalance);
-    let receipt1 = await estimateBalance.wait();
-    console.log("estimateBalance : ", receipt1.events[0].data);
-    // Convert the hex string to a BigNumber and then to a number
-    //const returnValueNumber = ethers.BigNumber.from(receipt1.events[0].data).toNumber();
-    console.log("returnValueNumber : ", returnValueNumber);
-    let balanceOfUnderlying = await testCompound.estimateBalanceOfUnderlying.call({ gasLimit: 1000000 });
-    let receipt2 = await balanceOfUnderlying.wait();
-    console.log("balanceOfUnderlying : ", receipt2.events[0].data);
+    const { exchangeRate, supplyRate } = await testCompound.callStatic.getInfo();
+    let estimateBalance = await testCompound.callStatic.balanceOfUnderlying();
+    console.log("s estimateBalance : ", estimateBalance.toString());
+    let balanceOfUnderlying = await testCompound.callStatic.estimateBalanceOfUnderlying();
+    console.log("s balanceOfUnderlying : ", balanceOfUnderlying);
     return {
       exchangeRate,
       supplyRate,
-      estimateBalance: estimateBalance.value,
-      balanceOfUnderlying: balanceOfUnderlying.value,
+      estimateBalance: estimateBalance.toString(),
+      balanceOfUnderlying: balanceOfUnderlying.toString(),
       token: await token.balanceOf(testCompound.address),
       cToken: await cToken.balanceOf(testCompound.address),
     }
   }
 
   describe("Compound ", function () {
-    it("Supply and Redeem", async function () {
+    it.only("Supply and Redeem", async function () {
       const { compoundErc20Contract, signer, wbtcContract, cToken } = await loadFixture(testCompoundErc20);
       console.log("Before balance" , await wbtcContract.balanceOf(signer.address));
       console.log("compoundErc20Contract.address = ", compoundErc20Contract.address);
@@ -68,8 +62,8 @@ describe("TestCompoundErc20", function () {
       console.log("--- supply ---");
       console.log(`exchange rate ${after.exchangeRate}`);
       console.log(`supply rate ${after.supplyRate}`);
-      console.log(`estimate balance ${after.estimateBalance.toString()}`);
-      console.log(`balance of underlying ${after.balanceOfUnderlying.toString()}`);
+      console.log(`estimate balance ${after.estimateBalance}`);
+      console.log(`balance of underlying ${after.balanceOfUnderlying}`);
       console.log(`token balance ${after.token}`);
       console.log(`c token balance ${after.cToken}`);
 
@@ -90,7 +84,7 @@ describe("TestCompoundErc20", function () {
       after = await snapshot(compoundErc20Contract, wbtcContract, cToken);
   
       console.log(`--- after some blocks... ---`);
-      console.log(`balance of underlying ${after.balanceOfUnderlying.toString()}`);
+      console.log(`balance of underlying ${after.balanceOfUnderlying}`);
   
       // test redeem
       const cTokenAmount = await cToken.balanceOf(compoundErc20Contract.address);
@@ -99,7 +93,7 @@ describe("TestCompoundErc20", function () {
       after = await snapshot(compoundErc20Contract, wbtcContract, cToken);
   
       console.log(`--- redeem ---`);
-      console.log(`balance of underlying ${after.balanceOfUnderlying.toString()}`);
+      console.log(`balance of underlying ${after.balanceOfUnderlying}`);
       console.log(`token balance ${after.token}`);
       console.log(`c token balance ${after.cToken}`);
 
@@ -125,19 +119,6 @@ describe("TestCompoundErc20", function () {
           console.log(message, " ", val);
         }
       } */
-    });
-
-    it.only("Supply and Redeem", async function () {
-      const { compoundErc20Contract, signer, wbtcContract, cToken } = await loadFixture(testCompoundErc20);
-
-      //let estimateBalance = await testCompound.testNonView.call({ gasLimit: 1000000 });
-      let test = await compoundErc20Contract.callStatic.testNonView();
-      console.log("test : ", test);
-      // let receipt = await test.wait();
-      // console.log("test receipt : ", receipt);
-      // Convert the hex string to a BigNumber and then to a number
-      //const returnValueNumber = ethers.BigNumber.from(receipt1.events[0].data).toNumber();
-      //console.log("returnValueNumber : ", returnValueNumber);
     });
   });
 });
