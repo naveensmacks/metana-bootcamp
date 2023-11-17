@@ -47,6 +47,7 @@ contract TestCompoundErc20 {
   }
 
   // not view function
+  //it is same as estimateBalanceOfUnderlying() but done inside cToken contract so both values will be close
   function balanceOfUnderlying() external returns (uint) {
     return cToken.balanceOfUnderlying(address(this));
   }

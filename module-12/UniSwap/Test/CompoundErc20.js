@@ -2,7 +2,7 @@ const { loadFixture } = require("@nomicfoundation/hardhat-network-helpers");
 const { network, ethers } = require("hardhat");
 
 const { WBTC, WBTC_WHALE, CWBTC } = require("./config")
-const DEPOSIT_AMOUNT = ethers.utils.parseUnits("1", 8);
+const DEPOSIT_AMOUNT = ethers.utils.parseUnits("100", 8);
 
 
 describe("TestCompoundErc20", function () {
@@ -32,9 +32,7 @@ describe("TestCompoundErc20", function () {
   const snapshot = async (testCompound, token, cToken) => {
     const { exchangeRate, supplyRate } = await testCompound.callStatic.getInfo();
     let estimateBalance = await testCompound.callStatic.balanceOfUnderlying();
-    console.log("s estimateBalance : ", estimateBalance.toString());
     let balanceOfUnderlying = await testCompound.callStatic.estimateBalanceOfUnderlying();
-    console.log("s balanceOfUnderlying : ", balanceOfUnderlying);
     return {
       exchangeRate,
       supplyRate,
@@ -49,14 +47,13 @@ describe("TestCompoundErc20", function () {
     it.only("Supply and Redeem", async function () {
       const { compoundErc20Contract, signer, wbtcContract, cToken } = await loadFixture(testCompoundErc20);
       console.log("Before balance" , await wbtcContract.balanceOf(signer.address));
+      console.log("Before balance of contract" , await wbtcContract.balanceOf(compoundErc20Contract.address));
       console.log("compoundErc20Contract.address = ", compoundErc20Contract.address);
       console.log("DEPOSIT_AMOUNT:" , DEPOSIT_AMOUNT);
       await wbtcContract.connect(signer).approve(compoundErc20Contract.address, DEPOSIT_AMOUNT );
       const testAllowance = await wbtcContract.allowance(signer.address, compoundErc20Contract.address);
       console.log("testAllowance: ", testAllowance);
-      console.log("2", signer.address);
       let tx = await compoundErc20Contract.connect(signer).supply(DEPOSIT_AMOUNT);
-      console.log("3");
       let after = await snapshot(compoundErc20Contract, wbtcContract, cToken);
 
       console.log("--- supply ---");
@@ -79,7 +76,7 @@ describe("TestCompoundErc20", function () {
         await network.provider.send("evm_mine");
       }
 
-      console.log("After increase block number:", await ethers.provider.getBlockNumber());
+      console.log("New block number:", await ethers.provider.getBlockNumber());
 
       after = await snapshot(compoundErc20Contract, wbtcContract, cToken);
   
@@ -96,29 +93,7 @@ describe("TestCompoundErc20", function () {
       console.log(`balance of underlying ${after.balanceOfUnderlying}`);
       console.log(`token balance ${after.token}`);
       console.log(`c token balance ${after.cToken}`);
-
-
-      //await wbtcContract.connect(signer).transfer(testCompoundErc20.address, fundAmount);
-      //console.log("After Balance" , await wbtcContract.balanceOf(signer.address));
-
-
-      /* const receipt = await tx.wait();
-    
-      //filtering logs only for the TestAaveFlashLoan address
-      const logsForContract = receipt.logs.filter((log) => log.address === testCompoundErc20.address);
-
-      const LogEvent = new ethers.utils.Interface(["event Log(string message, uint val)"]);
-      console.log("Below are the Log events from the contract");
-      for (const log of logsForContract) {
-        //filtering only log events - not required the TestAaveFlashLoan contract only has one event which is log
-        if (log.topics[0] === ethers.utils.keccak256(ethers.utils.toUtf8Bytes("Log(string,uint256)"))) {
-          //or you can also pass LogEvent.getEvent("Log") instead of "Log"
-          const decodedLog =  LogEvent.decodeEventLog("Log", log.data, log.topics);
-          const message = decodedLog.message;
-          const val = decodedLog.val.toString();
-          console.log(message, " ", val);
-        }
-      } */
+      
     });
   });
 });
