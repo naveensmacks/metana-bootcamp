@@ -12,6 +12,7 @@ const DAI_WHALE =process.env.DAI_WHALE
 // compound
 const CWBTC = "0xccF4429DB6322D5C611ee964527D42E5d685DD6a"
 const WBTC = "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599"
+const CDAI = "0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643"
 
 module.exports = {
   DAI_ADDRESS,
@@ -23,4 +24,5 @@ module.exports = {
   CWBTC,
   WBTC,
   WBTC_WHALE,
+  CDAI
 }
