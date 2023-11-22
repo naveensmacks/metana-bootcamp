@@ -56,4 +56,35 @@ describe("SwapExamples", () => {
     console.log("DAI balance", await dai.balanceOf(accounts[0].address))
     console.log("after trade WETH balance : ", await weth.balanceOf(accounts[0].address));
   })
+
+  //swap WETH --> USDC --> DAI - get dai for the amountIN(10 WETH)
+  it("swapExactInputMultihop", async () => {
+    const amountIn = 10n ** 18n;
+
+    // Deposit WETH
+    await weth.deposit({ value: amountIn });
+    await weth.approve(swapExamples.target, amountIn);
+    console.log("before trade WETH balance : ", await weth.balanceOf(accounts[0].address));
+    // Swap
+    await swapExamples.swapExactInputMultihop(amountIn);
+
+    console.log("DAI balance", await dai.balanceOf(accounts[0].address));
+    console.log("after trade WETH balance : ", await weth.balanceOf(accounts[0].address));
+  })
+
+  //swap WETH --> USDC --> DAI - get 10 DAI and detect the WETH worth of 10 DAI only
+  it("swapExactOutputMultihop", async () => {
+    const wethAmountInMax = 10n ** 18n;
+    const daiAmountOut = 100n * 10n ** 18n;
+
+    // Deposit WETH
+    await weth.deposit({ value: wethAmountInMax });
+    await weth.approve(swapExamples.target, wethAmountInMax);
+    console.log("before trade WETH balance : ", await weth.balanceOf(accounts[0].address));
+    // Swap
+    await swapExamples.swapExactOutputMultihop(daiAmountOut, wethAmountInMax);
+
+    console.log("DAI balance", await dai.balanceOf(accounts[0].address));
+    console.log("after trade WETH balance : ", await weth.balanceOf(accounts[0].address));
+  })
 })
