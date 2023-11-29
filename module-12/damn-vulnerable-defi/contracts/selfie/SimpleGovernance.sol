@@ -2,8 +2,9 @@
 pragma solidity ^0.8.0;
 
 import "../DamnValuableTokenSnapshot.sol";
-import "./ISimpleGovernance.sol"
-;
+import "./ISimpleGovernance.sol";
+import "hardhat/console.sol";
+
 /**
  * @title SimpleGovernance
  * @author Damn Vulnerable DeFi (https://damnvulnerabledefi.xyz)
@@ -48,13 +49,14 @@ contract SimpleGovernance is ISimpleGovernance {
     function executeAction(uint256 actionId) external payable returns (bytes memory) {
         if(!_canBeExecuted(actionId))
             revert CannotExecute(actionId);
-
+        console.log("_canBeExecuted");
         GovernanceAction storage actionToExecute = _actions[actionId];
         actionToExecute.executedAt = uint64(block.timestamp);
 
         emit ActionExecuted(actionId, msg.sender);
 
         (bool success, bytes memory returndata) = actionToExecute.target.call{value: actionToExecute.value}(actionToExecute.data);
+        console.log("success: ", success);
         if (!success) {
             if (returndata.length > 0) {
                 assembly {
@@ -91,7 +93,7 @@ contract SimpleGovernance is ISimpleGovernance {
      */
     function _canBeExecuted(uint256 actionId) private view returns (bool) {
         GovernanceAction memory actionToExecute = _actions[actionId];
-        
+        console.log("actionToExecute.proposedAt : ", actionToExecute.proposedAt);
         if (actionToExecute.proposedAt == 0) // early exit
             return false;
 
@@ -99,13 +101,17 @@ contract SimpleGovernance is ISimpleGovernance {
         unchecked {
             timeDelta = uint64(block.timestamp) - actionToExecute.proposedAt;
         }
-
+        console.log("timeDelta : ", timeDelta);
+        console.log("ACTION_DELAY_IN_SECONDS: ", ACTION_DELAY_IN_SECONDS);
         return actionToExecute.executedAt == 0 && timeDelta >= ACTION_DELAY_IN_SECONDS;
     }
 
     function _hasEnoughVotes(address who) private view returns (bool) {
+        console.log("who :", who);
         uint256 balance = _governanceToken.getBalanceAtLastSnapshot(who);
+        console.log("balance: ", balance);
         uint256 halfTotalSupply = _governanceToken.getTotalSupplyAtLastSnapshot() / 2;
+        console.log("halfTotalSupply: ", halfTotalSupply);
         return balance > halfTotalSupply;
     }
 }

