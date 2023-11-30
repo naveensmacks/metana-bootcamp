@@ -79,7 +79,7 @@ describe('[Challenge] Free Rider', function () {
         );
 
         // Deploy NFT contract
-        nft = await (await ethers.getContractFactory('DamnValuableNFT', deployer)).attach(await marketplace.token());
+        nft = await (await ethers.getContractFactory('DamnValuableNFT', deployer)).attach(await marketplace.token());//attach is similar to ethers.getContractAt function
         expect(await nft.owner()).to.eq(ethers.constants.AddressZero); // ownership renounced
         expect(await nft.rolesOf(marketplace.address)).to.eq(await nft.MINTER_ROLE());
 
