@@ -47,7 +47,7 @@ contract FreeRiderNFTMarketplace is ReentrancyGuard {
             
         if (amount != prices.length)
             revert InvalidPricesAmount();
-
+        console.log("offerMany");
         for (uint256 i = 0; i < amount;) {
             unchecked {
                 _offerOne(tokenIds[i], prices[i]);

