@@ -47,7 +47,6 @@ contract FreeRiderNFTMarketplace is ReentrancyGuard {
             
         if (amount != prices.length)
             revert InvalidPricesAmount();
-        console.log("offerMany");
         for (uint256 i = 0; i < amount;) {
             unchecked {
                 _offerOne(tokenIds[i], prices[i]);
@@ -78,7 +77,6 @@ contract FreeRiderNFTMarketplace is ReentrancyGuard {
     }
 
     function buyMany(uint256[] calldata tokenIds) external payable nonReentrant {
-        console.log("Entered buyMany");
         for (uint256 i = 0; i < tokenIds.length;) {
             unchecked {
                 _buyOne(tokenIds[i]);

