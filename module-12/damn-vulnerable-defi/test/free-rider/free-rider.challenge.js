@@ -156,7 +156,7 @@ describe('[Challenge] Free Rider', function () {
         expect(await marketplace.offersCount()).to.be.eq(0);
         expect(
             await ethers.provider.getBalance(marketplace.address)
-        ).to.be.lt(ethers.BigNumber.from(MARKETPLACE_INITIAL_ETH_BALANCE));
+        ).to.be.lt(MARKETPLACE_INITIAL_ETH_BALANCE);
 
         //Player must have earned all ETH
         expect(await ethers.provider.getBalance(player.address)).to.be.gt(BOUNTY);
