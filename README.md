@@ -13,3 +13,6 @@ YUL and byte Manipulation
 # Module-11
 Transactions, Multi signatures, and Meta transactions. ECDSA and its weaknesses.  
 -Multi-Sig-Wallet contract
+
+# Module-12
+Defi Protocols and Exploits
