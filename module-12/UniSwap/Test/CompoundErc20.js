@@ -157,7 +157,7 @@ describe("TestCompoundErc20", function () {
   }
 
   describe("Compound ", function () {
-    it.only("Supply , borrow, repay and Redeem", async function () {
+    it("Supply , borrow, repay and Redeem", async function () {
       const { compoundErc20Contract, signer, wbtcContract, tokenToBorrow, repayWhaleSigner } = await loadFixture(testCompoundErc20Borrow);
       console.log("compoundErc20Contract.address = ", compoundErc20Contract.address);
       console.log("DEPOSIT_AMOUNT:" , DEPOSIT_AMOUNT);
