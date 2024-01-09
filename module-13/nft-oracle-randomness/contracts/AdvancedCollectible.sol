@@ -1,9 +1,11 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
-import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
+import "@chainlink/contracts/src/v0.8/vrf/VRFConsumerBaseV2.sol";
+import "hardhat/console.sol";
 
 contract AdvancedCollectible is VRFConsumerBaseV2, ERC721URIStorage {
     uint256 public tokenCounter;
@@ -25,7 +27,7 @@ contract AdvancedCollectible is VRFConsumerBaseV2, ERC721URIStorage {
     constructor(address _VRFCoordinator, uint64 _subscriptionId, bytes32 _keyhash) 
     VRFConsumerBaseV2(_VRFCoordinator)
     ERC721("Dogie", "DOG")
-    {
+    {   
         tokenCounter = 0;
         keyHash = _keyhash;
         COORDINATOR = VRFCoordinatorV2Interface(_VRFCoordinator);
@@ -37,6 +39,7 @@ contract AdvancedCollectible is VRFConsumerBaseV2, ERC721URIStorage {
             requestIdToSender[requestId] = msg.sender;
             requestIdToTokenURI[requestId] = tokenURI;
             emit RequestedCollectible(requestId);
+            return requestId;
     }
 
     function fulfillRandomWords(uint256 requestId, uint256[] memory randomNumber) internal override {
