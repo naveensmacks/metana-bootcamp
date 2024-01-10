@@ -5,7 +5,6 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
 import "@chainlink/contracts/src/v0.8/vrf/VRFConsumerBaseV2.sol";
-import "hardhat/console.sol";
 
 contract AdvancedCollectible is VRFConsumerBaseV2, ERC721URIStorage {
     uint256 public tokenCounter;
@@ -17,7 +16,7 @@ contract AdvancedCollectible is VRFConsumerBaseV2, ERC721URIStorage {
     mapping(uint256 => uint256) public requestIdToTokenId;
     event RequestedCollectible(uint256 indexed requestId); 
     // New event from the video!
-    event ReturnedCollectible(uint256 indexed newItemId, Breed breed);
+    event ReturnedCollectible(uint256 indexed newItemId, Breed breed, uint256 randomNumber);
 
 
     bytes32 internal keyHash;
@@ -34,6 +33,10 @@ contract AdvancedCollectible is VRFConsumerBaseV2, ERC721URIStorage {
         subscriptionId = _subscriptionId;
     }
 
+    function setSubscriptionId(uint64 _subscriptionId) public{
+        subscriptionId = _subscriptionId;
+    }
+
     function createCollectible(string memory tokenURI) public returns (uint256) {
             uint256 requestId = COORDINATOR.requestRandomWords(keyHash, subscriptionId, 3, 1000000, 1);
             requestIdToSender[requestId] = msg.sender;
@@ -42,6 +45,13 @@ contract AdvancedCollectible is VRFConsumerBaseV2, ERC721URIStorage {
             return requestId;
     }
 
+    /*
+        fulfillRandomness handles the VRF response
+        VRFConsumerBaseV2 expects its subcontracts to have a method with this
+        signature, and will call it once it has verified the proof
+        associated with the randomness. (It is triggered via a call to
+        rawFulfillRandomness in the base contract VRFConsumerBaseV2
+    */
     function fulfillRandomWords(uint256 requestId, uint256[] memory randomNumber) internal override {
         address dogOwner = requestIdToSender[requestId];
         string memory tokenURI = requestIdToTokenURI[requestId];
@@ -52,7 +62,7 @@ contract AdvancedCollectible is VRFConsumerBaseV2, ERC721URIStorage {
         tokenIdToBreed[newItemId] = breed;
         requestIdToTokenId[requestId] = newItemId;
         tokenCounter = tokenCounter + 1;
-        emit ReturnedCollectible(newItemId, breed);
+        emit ReturnedCollectible(newItemId, breed, randomNumber[0]);
     }
 
     function setTokenURI(uint256 tokenId, string memory _tokenURI) public {
