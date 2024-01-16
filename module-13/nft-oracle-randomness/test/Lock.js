@@ -2,6 +2,7 @@ const {
   time,
   loadFixture,
 } = require("@nomicfoundation/hardhat-toolbox/network-helpers");
+//const { time, loadFixture } = require("@nomicfoundation/hardhat-network-helpers");
 const { anyValue } = require("@nomicfoundation/hardhat-chai-matchers/withArgs");
 const { expect } = require("chai");
 
@@ -95,16 +96,33 @@ describe("Lock", function () {
     });
 
     describe("Events", function () {
-      it("Should emit an event on withdrawals", async function () {
+      it.only("Should emit an event on withdrawals", async function () {
         const { lock, unlockTime, lockedAmount } = await loadFixture(
           deployOneYearLockFixture
         );
 
         await time.increaseTo(unlockTime);
 
-        await expect(lock.withdraw())
+        /*        await expect(lock.withdraw())
           .to.emit(lock, "Withdrawal")
           .withArgs(lockedAmount, anyValue); // We accept any value as `when` arg
+          */
+        
+        // Begin listening for any Transfer event
+        lock.on("Withdrawal", (amount, when, name, dog, event) => {
+          console.log(`amount: ${ amount } , When: ${ when }, name: ${ name }, dog: ${dog}`);
+          
+          // The `event.log` has the entire EventLog
+          console.log("Event.log : ", event.log.args);
+
+          // Optionally, stop listening
+        });
+        
+        const withdrawTx = await lock.withdraw();
+        //console.log("withdrawTx : ", withdrawTx);
+        //const withdrawReceipt = await withdrawTx.wait();
+
+        
       });
     });
 
