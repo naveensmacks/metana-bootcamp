@@ -1,13 +1,4 @@
-# Sample Hardhat Project
+# Oracle - randomness
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a script that deploys that contract.
-
-Try running some of the following tasks:
-
-```shell
-npx hardhat help
-npx hardhat test
-REPORT_GAS=true npx hardhat test
-npx hardhat node
-npx hardhat run scripts/deploy.js
-```
+//sepolia deployed address: 0xA5Ba55E75BC8820EE08B77b05A8702ef181181c1
+//updated subId and deployed: 0xDFcaC9F177F78a699e5879568762f339D3c796AE

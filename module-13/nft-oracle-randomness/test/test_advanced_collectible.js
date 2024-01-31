@@ -14,7 +14,7 @@ describe("AdvancedCollectible", function () {
     });
 
     it("Should create an advanced collectible", async function () {
-        //setting timeouit for mocha test, the test exceeding Mocha's default timeout limit.(2 or 4secs)
+        //setting timeout for mocha test, the test exceeding Mocha's default timeout limit.(2 or 4secs)
         //since we're waiting for an external response from the Chainlink VRF coordinator, the operation takes longer than the default timeout.
         this.timeout(200000); 
         //listen to emit event  event ReturnedCollectible(uint256 indexed newItemId, Breed breed, uint256 randomNumber);
