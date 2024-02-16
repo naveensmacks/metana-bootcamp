@@ -4,6 +4,9 @@ const keyhash = "0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc
 const subscriptionId = 8444
 const fee = 100000000000000000
 
+//remix constructor input
+//8444, "0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625", "0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c", 10, 2
+
 module.exports = {
   vrfCoordinatorAddress,
   linkTokenAddress,

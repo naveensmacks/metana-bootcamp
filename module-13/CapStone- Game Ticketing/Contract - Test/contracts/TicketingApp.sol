@@ -6,29 +6,37 @@ import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
 
 contract TicketingApp is VRFConsumerBaseV2 {
     uint256 public registrationEndTime;
+    mapping(address => bool) public hasRegistered;
     address[] public registrants;
     address[] public selectedWinners;
-    uint256 public constant MAX_WINNERS = 100;
+    uint32 public immutable MAX_PARTICIPANTS;
+    uint32 public immutable MAX_WINNERS;
     VRFCoordinatorV2Interface COORDINATOR;
     uint64 s_subscriptionId;
     bytes32 keyHash;
     uint32 callbackGasLimit = 100000;
     uint16 requestConfirmations = 3;
-    uint32 numWords =  MAX_WINNERS;
 
     // Chainlink VRF Coordinator addresses and LINK token addresses vary by network
-    constructor(uint64 subscriptionId, address vrfCoordinator, bytes32 _keyHash)
+    constructor(uint64 subscriptionId, address vrfCoordinator, bytes32 _keyHash, uint32 maxParticipants, uint32 maxTickets)
         VRFConsumerBaseV2(vrfCoordinator) {
-        registrationEndTime = block.timestamp + (2 days); // Registration open for 2 days
+        registrationEndTime = block.timestamp + (2 minutes); // Registration open for 2 days
         COORDINATOR = VRFCoordinatorV2Interface(vrfCoordinator);
         s_subscriptionId = subscriptionId;
         keyHash = _keyHash;
+        MAX_PARTICIPANTS = maxParticipants;
+        MAX_WINNERS = maxTickets;
     }
 
-    function register() public {
-        require(block.timestamp <= registrationEndTime, "Registration period has ended.");
-        require(registrants.length < 1500, "Registration limit reached.");
-        registrants.push(msg.sender);
+    //remove address add in final release - use msg.sender where ever applicable
+    function register(address add) public {
+        //uncomment below line in final release      
+        //require(block.timestamp <= registrationEndTime, "Registration period has ended.");
+        require(!hasRegistered[add], "Sender has already registered.");
+        require(registrants.length < MAX_PARTICIPANTS, "Registration limit reached.");
+        //registrants.push(msg.sender);
+        registrants.push(add);//doing this for the purpose of testing in harhat, in prod needs to be changed to msg.sender
+        hasRegistered[add] = true;
     }
 
     function drawWinners() public {
@@ -39,7 +47,7 @@ contract TicketingApp is VRFConsumerBaseV2 {
             s_subscriptionId,
             requestConfirmations,
             callbackGasLimit,
-            numWords
+            MAX_WINNERS
         );
     }
 

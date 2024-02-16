@@ -5,24 +5,16 @@
 // will compile your contracts, add the Hardhat Runtime Environment's members to the
 // global scope, and execute the script.
 const hre = require("hardhat");
+const { vrfCoordinatorAddress, subscriptionId, keyhash } = require("../config");
 
 async function main() {
-  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  const unlockTime = currentTimestampInSeconds + 60;
+  const ticketingApp = await hre.ethers.deployContract("TicketingApp", [subscriptionId, vrfCoordinatorAddress, keyhash,10, 2]);
 
-  const lockedAmount = hre.ethers.parseEther("0.001");
+  await ticketingApp.waitForDeployment();
 
-  const lock = await hre.ethers.deployContract("Lock", [unlockTime], {
-    value: lockedAmount,
-  });
-
-  await lock.waitForDeployment();
-
-  console.log(
-    `Lock with ${ethers.formatEther(
-      lockedAmount
-    )}ETH and unlock timestamp ${unlockTime} deployed to ${lock.target}`
-  );
+  console.log("TicketingApp deployed to address:", ticketingApp.target);
+  //sepolia deployed address: 0x1B66B137265b20D153B9Ca6037fCE6271FDFb7eb
+  //then added this address as consumer in vrf.chain.link
 }
 
 // We recommend this pattern to be able to use async/await everywhere

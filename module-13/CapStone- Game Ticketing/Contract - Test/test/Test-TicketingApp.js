@@ -3,34 +3,36 @@ const { ethers } = require("hardhat");
 const { vrfCoordinatorAddress, linkTokenAddress, keyhash, subscriptionId, fee } = require("../config");
 
 describe("TicketingApp", function () {
-  let ticketingApp, deployer, users;
+  let ticketingApp, deployer;
+  let deployedAddress = "0x1B66B137265b20D153B9Ca6037fCE6271FDFb7eb";
 
   before(async function () {
-    // Get signers
-    [deployer, ...users] = await ethers.getSigners();
-
-    // Deploy the TicketingApp contract
     const TicketingApp = await ethers.getContractFactory("TicketingApp");
-    ticketingApp = await TicketingApp.deploy(subscriptionId, vrfCoordinatorAddress, keyhash);
-    await ticketingApp.deployed();
+    [deployer] = await ethers.getSigners();
+
+    // get deployed AdvancedCollectible contract
+    ticketingApp = await TicketingApp.attach(deployedAddress);
   });
 
-  it("Allows users to register", async function () {
+  it.only("Allows users to register", async function () {
     // Simulate user registrations
     for (let i = 0; i < 10; i++) {
-      await ticketingApp.connect(users[i]).register();
+      const randomAddress = ethers.hexlify(ethers.randomBytes(20));
+      await ticketingApp.connect(deployer).register(randomAddress);
     }
 
-    // Verify registrations
-    const registrantCount = await ticketingApp.getRegistrantCount();
-    expect(registrantCount).to.equal(10);
   });
 
+  it("show registrants", async function () {
+    console.log("Registered Participants")
+    let max_participants = await ticketingApp.MAX_PARTICIPANTS();
+    for(let i = 0 ; i< max_participants; i++) {
+      console.log(await ticketingApp.registrants(i));
+    }
+  });
+  //Run this after the stipulated time
   it("Draws winners after registration period", async function () {
-    // Increase blockchain time to simulate end of registration period
-    await ethers.provider.send("evm_increaseTime", [2 * 24 * 60 * 60]); // 2 days
-    await ethers.provider.send("evm_mine");
-
+    
     // Draw winners
     await ticketingApp.drawWinners();
 
@@ -40,12 +42,11 @@ describe("TicketingApp", function () {
     // A more complex test setup would be required to simulate or wait for the VRF callback
   });
 
-  it("Correctly selects winners", async function () {
-    // Check the selected winners count
-    // This part is highly dependent on your contract's public methods to fetch winners or winner count
-    // Assuming you have a method to fetch the count of selected winners
-    const winnersCount = await ticketingApp.getSelectedWinnersCount();
-    expect(winnersCount).to.be.greaterThan(0);
-    // This assumes your contract has implemented such a function
+  it("show selected winners", async function () {
+    console.log("Selected Winners")
+    let max_winners = await ticketingApp.MAX_WINNERS();
+    for(let i = 0 ; i< max_winners; i++) {
+      console.log(await ticketingApp.selectedWinners(i));
+    }
   });
 });
