@@ -44,8 +44,8 @@ describe("TicketingApp", function () {
 
   it("show selected winners", async function () {
     console.log("Selected Winners")
-    let max_winners = await ticketingApp.MAX_WINNERS();
-    for(let i = 0 ; i< max_winners; i++) {
+    let max_tickets = await ticketingApp.MAX_TICKETS();
+    for(let i = 0 ; i< max_tickets; i++) {
       console.log(await ticketingApp.selectedWinners(i));
     }
   });
