@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
-contract TicketingApp is VRFConsumerBaseV2,Ownable,ERC721Enumerable, ReentrancyGuard {
+contract TicketingAppv2 is VRFConsumerBaseV2,Ownable,ERC721Enumerable, ReentrancyGuard {
     uint256 public registrationEndTime;
     mapping(address => bool) public hasRegistered;
     address[] public registrants;
@@ -40,8 +40,19 @@ contract TicketingApp is VRFConsumerBaseV2,Ownable,ERC721Enumerable, ReentrancyG
         MAX_TICKETS = maxTickets;
     }
 
+    modifier registrationClosed {
+        require(block.timestamp > registrationEndTime, "Registration period is not closed yet.");
+        _;
+    }
+
+    modifier registrationOpen {
+        require(block.timestamp <= registrationEndTime, "Registration period is closed.");
+        _;
+    }
+
     //remove address add in final release - use msg.sender where ever applicable
-    function register(address add) public {
+    function register() public {
+        address add = msg.sender;
         require(block.timestamp <= registrationEndTime, "Registration period has ended.");
         require(!hasRegistered[add], "Sender has already registered.");
         require(registrants.length < MAX_PARTICIPANTS, "Registration limit reached.");
@@ -50,8 +61,7 @@ contract TicketingApp is VRFConsumerBaseV2,Ownable,ERC721Enumerable, ReentrancyG
         hasRegistered[add] = true;
     }
 
-    function drawWinners() public {
-        require(block.timestamp > registrationEndTime, "Registration period is still open.");
+    function drawWinners() public registrationClosed{
         if(MAX_TICKETS < registrants.length) {
           // Request randomness
           COORDINATOR.requestRandomWords(
@@ -62,9 +72,9 @@ contract TicketingApp is VRFConsumerBaseV2,Ownable,ERC721Enumerable, ReentrancyG
               MAX_TICKETS
           );
         } else{
-          //since total participants are less the max_tickets all are eligible to buy tickets
+          //since total participants are less the max_tickets all the participants are eligible to buy tickets
           uint256 totalRegistrants = registrants.length;
-          for (uint256 i = 0; i < registrants.length ; i++) {
+          for (uint256 i = 0; i < totalRegistrants ; i++) {
             selectedWinners.push(registrants[i]);
             registrants[i] = registrants[totalRegistrants - 1];
             registrants.pop();
@@ -92,7 +102,8 @@ contract TicketingApp is VRFConsumerBaseV2,Ownable,ERC721Enumerable, ReentrancyG
     }
 
     //mints ticket nfts for the eligible winners
-    function buyTicket() public payable nonReentrant {
+    function buyTicket() public payable nonReentrant registrationClosed {
+        require(block.timestamp > registrationEndTime, "Registration period is still open.");
         require(isSelectedWinner[msg.sender], "You must be a selected winner to buy a ticket.");
         require(msg.value == ticketPrice, "Incorrect ticket price.");
 
@@ -102,7 +113,7 @@ contract TicketingApp is VRFConsumerBaseV2,Ownable,ERC721Enumerable, ReentrancyG
         ticketOwner[newTicketId] = msg.sender;
     }
 
-    function transferTicket(uint256 ticketId, address to) public {
+    function transferTicket(uint256 ticketId, address to) public registrationClosed{
         require(ownerOf(ticketId) == msg.sender, "You must own the ticket to transfer it.");
         require(msg.sender != to, "You cannot transfer the ticket to yourself.");
 
@@ -115,15 +126,15 @@ contract TicketingApp is VRFConsumerBaseV2,Ownable,ERC721Enumerable, ReentrancyG
 
     //below methods are for settings the configs for the event like ticketprice, no of tickets, ticketprice and registration end time
     //accessible only by contract owner
-    function setMaxTickets(uint32 maxTickets) external onlyOwner{
+    function setMaxTickets(uint32 maxTickets) external onlyOwner registrationOpen {
       MAX_TICKETS = maxTickets;
     }
 
-    function setTicketPrice(uint256 _ticketPrice) external onlyOwner{
+    function setTicketPrice(uint256 _ticketPrice) external onlyOwner registrationOpen {
       ticketPrice = _ticketPrice;
     }
 
-    function setMaxParticipants(uint32 maxParticipants) external onlyOwner {
+    function setMaxParticipants(uint32 maxParticipants) external onlyOwner registrationOpen {
       MAX_PARTICIPANTS = maxParticipants;
     }
 
@@ -137,7 +148,7 @@ contract TicketingApp is VRFConsumerBaseV2,Ownable,ERC721Enumerable, ReentrancyG
       }
     }
 
-    function endRegistrationEndTime() external onlyOwner {
+    function closeRegistration() external onlyOwner {
       registrationEndTime = 0;
     }
 }
