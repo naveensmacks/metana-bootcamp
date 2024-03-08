@@ -1,0 +1,49 @@
+/* theme.css */
+body {
+  background-color: #121212;
+  color: #e0e0e0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.App-header {
+  background-color: #1f1f1f;
+  padding: 20px;
+  text-align: center;
+}
+
+.button {
+  background-color: #6200ee;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  padding: 10px 20px;
+  margin: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.button:hover {
+  background-color: #3700b3;
+}
+
+.input {
+  background-color: #333333;
+  border: 1px solid #555;
+  border-radius: 4px;
+  color: #e0e0e0;
+  padding: 10px;
+  margin: 5px;
+  width: calc(100% - 24px);
+}
+
+.container {
+  max-width: 600px;
+  margin: auto;
+  padding: 20px;
+}
+
+.title {
+  color: #adbdff;
+}
